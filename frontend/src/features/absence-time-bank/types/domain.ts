@@ -94,6 +94,7 @@ export interface AbsenceDraft {
   startTime: string;
   endTime: string;
   compensationPolicy: CompensationPolicy;
+  unpaidBreakOverlapMinutes?: string;
 }
 
 export interface CreditDraft {

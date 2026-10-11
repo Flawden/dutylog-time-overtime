@@ -1,8 +1,12 @@
+const { seedScheduledAbsence } = require('./scheduled-absence-fixture');
 const { test, expect } = require('./fixtures');
 const { registerAndOnboard, openView, waitForApi } = require('./helpers');
 
 test('Vue owns Absence and Time Bank while blocking duplicate domain mutations', async ({ page }) => {
   await registerAndOnboard(page, { preset:'full', prefix:'vue-absence-bank' });
+
+  const fixtureDate = await page.evaluate(() => { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`; });
+  await seedScheduledAbsence(page, [fixtureDate]);
 
   await page.evaluate(() => jfetch('/api/overtime/credits', {
     method:'POST',
@@ -23,6 +27,7 @@ test('Vue owns Absence and Time Bank while blocking duplicate domain mutations',
   await page.locator('#vacationType').selectOption(timeOffValue);
   await page.locator('#vacationStatus').selectOption('APPROVED');
   await page.locator('#vacationCoverage').selectOption('PARTIAL');
+  await page.locator('#vacationUnpaidBreakOverlap').fill('0');
   await page.locator('#vacationTitle').fill('Vue duplicate-submit guard');
   await page.locator('#vacationStartTime').fill('09:00');
   await page.locator('#vacationEndTime').fill('11:00');

@@ -36,6 +36,7 @@ test('absence compensation is linked to FIFO overtime and monthly plan-fact summ
   await page.locator('#vacationStatus').selectOption('APPROVED');
   await expect(page.locator('#vacationCompensation')).toHaveValue('OVERTIME_BANK');
   await page.locator('#vacationCoverage').selectOption('PARTIAL');
+  await page.locator('#vacationUnpaidBreakOverlap').fill('0');
   await page.locator('#vacationTitle').fill('Отгул за переработку');
   await page.locator('#vacationStart').fill(dates.timeOff);
   await page.locator('#vacationStartTime').fill('09:00');

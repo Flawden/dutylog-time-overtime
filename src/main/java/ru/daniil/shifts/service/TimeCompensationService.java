@@ -531,7 +531,7 @@ public class TimeCompensationService {
         return scheduledAbsences.partial(user, day, LocalDate.parse(item.date()),
                 item.startTime() == null ? null : LocalTime.parse(item.startTime()),
                 item.endTime() == null ? null : LocalTime.parse(item.endTime()),
-                plannedMinutes);
+                plannedMinutes, item.unpaidBreakOverlapMinutes());
     }
 
     private String minutesLabel(int minutes) {

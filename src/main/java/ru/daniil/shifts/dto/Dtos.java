@@ -2373,8 +2373,13 @@ public final class Dtos {
             boolean replacesShift,
             String compensationPolicy,
             int compensatedMinutes,
-            Long linkedOvertimeUsageId
-    ) {}
+            Long linkedOvertimeUsageId,
+            @Min(0) @Max(1440) Integer unpaidBreakOverlapMinutes
+    ) {
+        public AbsencePeriodDto(Long id, Long typeId, String typeName, String typeColor, String systemCode, boolean countsAgainstAllowance, String title, String startDate, String endDate, String status, String note, int calendarDays, int countedDays, int shiftConflictCount, String createdAt, String updatedAt, String balancePolicy, String coverage, String startTime, String endTime, int chargedMinutes, boolean replacesShift, String compensationPolicy, int compensatedMinutes, Long linkedOvertimeUsageId) {
+            this(id, typeId, typeName, typeColor, systemCode, countsAgainstAllowance, title, startDate, endDate, status, note, calendarDays, countedDays, shiftConflictCount, createdAt, updatedAt, balancePolicy, coverage, startTime, endTime, chargedMinutes, replacesShift, compensationPolicy, compensatedMinutes, linkedOvertimeUsageId, null);
+        }
+    }
 
     public record AbsencePeriodCreateRequest(
             @NotNull(message = "Выберите тип отсутствия") Long typeId,
@@ -2386,8 +2391,13 @@ public final class Dtos {
             @Pattern(regexp = "FULL_DAY|PARTIAL", message = "coverage: FULL_DAY или PARTIAL") String coverage,
             @Pattern(regexp = "^$|^([01]\\d|2[0-3]):[0-5]\\d$", message = "Время начала должно быть в формате HH:mm") String startTime,
             @Pattern(regexp = "^$|^([01]\\d|2[0-3]):[0-5]\\d$", message = "Время окончания должно быть в формате HH:mm") String endTime,
-            @Pattern(regexp = "VACATION_ALLOWANCE|OVERTIME_BANK|SICK_PAY|UNPAID|NONE", message = "Некорректный источник компенсации") String compensationPolicy
+            @Pattern(regexp = "VACATION_ALLOWANCE|OVERTIME_BANK|SICK_PAY|UNPAID|NONE", message = "Некорректный источник компенсации") String compensationPolicy,
+            @Min(0) @Max(1440) Integer unpaidBreakOverlapMinutes
     ) {
+        public AbsencePeriodCreateRequest(Long typeId, String title, String startDate, String endDate, String status, String note, String coverage, String startTime, String endTime, String compensationPolicy) {
+            this(typeId, title, startDate, endDate, status, note, coverage, startTime, endTime, compensationPolicy, null);
+        }
+
         public AbsencePeriodCreateRequest(Long typeId, String title, String startDate, String endDate, String status, String note) {
             this(typeId, title, startDate, endDate, status, note, null, null, null, null);
         }
@@ -2406,8 +2416,13 @@ public final class Dtos {
             String startTime,
             String endTime,
             Boolean clearTimes,
-            @Pattern(regexp = "VACATION_ALLOWANCE|OVERTIME_BANK|SICK_PAY|UNPAID|NONE", message = "Некорректный источник компенсации") String compensationPolicy
+            @Pattern(regexp = "VACATION_ALLOWANCE|OVERTIME_BANK|SICK_PAY|UNPAID|NONE", message = "Некорректный источник компенсации") String compensationPolicy,
+            @Min(0) @Max(1440) Integer unpaidBreakOverlapMinutes
     ) {
+        public AbsencePeriodUpdateRequest(Long typeId, String title, String startDate, String endDate, String status, String note, Boolean clearTitle, Boolean clearNote, String coverage, String startTime, String endTime, Boolean clearTimes, String compensationPolicy) {
+            this(typeId, title, startDate, endDate, status, note, clearTitle, clearNote, coverage, startTime, endTime, clearTimes, compensationPolicy, null);
+        }
+
         public AbsencePeriodUpdateRequest(Long typeId, String title, String startDate, String endDate,
                                           String status, String note, Boolean clearTitle, Boolean clearNote) {
             this(typeId, title, startDate, endDate, status, note, clearTitle, clearNote, null, null, null, null, null);
@@ -2422,8 +2437,13 @@ public final class Dtos {
             @Pattern(regexp = "FULL_DAY|PARTIAL|HOURS_ONLY", message = "coverage: FULL_DAY, PARTIAL или HOURS_ONLY") String coverage,
             String startTime,
             String endTime,
-            @Pattern(regexp = "VACATION_ALLOWANCE|OVERTIME_BANK|SICK_PAY|UNPAID|NONE", message = "Некорректный источник компенсации") String compensationPolicy
+            @Pattern(regexp = "VACATION_ALLOWANCE|OVERTIME_BANK|SICK_PAY|UNPAID|NONE", message = "Некорректный источник компенсации") String compensationPolicy,
+            @Min(0) @Max(1440) Integer unpaidBreakOverlapMinutes
     ) {
+        public AbsencePreviewRequest(Long typeId, String startDate, String endDate, Long excludePeriodId, String coverage, String startTime, String endTime, String compensationPolicy) {
+            this(typeId, startDate, endDate, excludePeriodId, coverage, startTime, endTime, compensationPolicy, null);
+        }
+
         public AbsencePreviewRequest(Long typeId, String startDate, String endDate, Long excludePeriodId) {
             this(typeId, startDate, endDate, excludePeriodId, null, null, null, null);
         }
@@ -2496,8 +2516,13 @@ public final class Dtos {
             int plannedShiftMinutes,
             String compensationPolicy,
             int compensatedMinutes,
-            Long linkedOvertimeUsageId
+            Long linkedOvertimeUsageId,
+            @Min(0) @Max(1440) Integer unpaidBreakOverlapMinutes
     ) {
+        public AbsenceOccurrenceDto(Long periodId, Long typeId, String typeName, String typeColor, String systemCode, String title, String date, String startDate, String endDate, String status, boolean countedDay, boolean shiftConflict, String balancePolicy, String coverage, String startTime, String endTime, int chargedMinutes, boolean replacesShift, String plannedShiftName, String plannedShiftColor, int plannedShiftMinutes, String compensationPolicy, int compensatedMinutes, Long linkedOvertimeUsageId) {
+            this(periodId, typeId, typeName, typeColor, systemCode, title, date, startDate, endDate, status, countedDay, shiftConflict, balancePolicy, coverage, startTime, endTime, chargedMinutes, replacesShift, plannedShiftName, plannedShiftColor, plannedShiftMinutes, compensationPolicy, compensatedMinutes, linkedOvertimeUsageId, null);
+        }
+
         /** Source-compatible constructor for the v27.25 plan/fact projection. */
         public AbsenceOccurrenceDto(Long periodId, Long typeId, String typeName, String typeColor, String systemCode,
                                     String title, String date, String startDate, String endDate, String status,

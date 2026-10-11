@@ -2945,6 +2945,7 @@ components:
         startTime: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$', nullable: true }
         endTime: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$', nullable: true }
         compensationPolicy: { type: string, enum: [VACATION_ALLOWANCE, OVERTIME_BANK, SICK_PAY, UNPAID, NONE], default: NONE }
+        unpaidBreakOverlapMinutes: { type: integer, minimum: 0, maximum: 1440, nullable: true }
     AbsencePeriodPatch:
       type: object
       properties:
@@ -2961,6 +2962,7 @@ components:
         endTime: { type: string, nullable: true }
         clearTimes: { type: boolean }
         compensationPolicy: { type: string, enum: [VACATION_ALLOWANCE, OVERTIME_BANK, SICK_PAY, UNPAID, NONE] }
+        unpaidBreakOverlapMinutes: { type: integer, minimum: 0, maximum: 1440, nullable: true }
     AbsencePeriod:
       allOf:
         - $ref: '#/components/schemas/AbsencePeriodInput'
@@ -2981,6 +2983,7 @@ components:
             compensationPolicy: { type: string, enum: [VACATION_ALLOWANCE, OVERTIME_BANK, SICK_PAY, UNPAID, NONE] }
             compensatedMinutes: { type: integer, minimum: 0 }
             linkedOvertimeUsageId: { type: integer, format: int64, nullable: true }
+        unpaidBreakOverlapMinutes: { type: integer, minimum: 0, maximum: 1440, nullable: true }
     AbsenceOccurrence:
       type: object
       required: [periodId, typeId, typeName, typeColor, date, startDate, endDate, status, countedDay, shiftConflict]
@@ -3009,6 +3012,7 @@ components:
         compensationPolicy: { type: string, enum: [VACATION_ALLOWANCE, OVERTIME_BANK, SICK_PAY, UNPAID, NONE] }
         compensatedMinutes: { type: integer, minimum: 0 }
         linkedOvertimeUsageId: { type: integer, format: int64, nullable: true }
+        unpaidBreakOverlapMinutes: { type: integer, minimum: 0, maximum: 1440, nullable: true }
     AbsencePreviewInput:
       type: object
       required: [typeId, startDate, endDate]
@@ -3021,6 +3025,7 @@ components:
         startTime: { type: string, nullable: true }
         endTime: { type: string, nullable: true }
         compensationPolicy: { type: string, enum: [VACATION_ALLOWANCE, OVERTIME_BANK, SICK_PAY, UNPAID, NONE] }
+        unpaidBreakOverlapMinutes: { type: integer, minimum: 0, maximum: 1440, nullable: true }
     AbsencePreviewItem:
       type: object
       required: [date, weekend, counted, shiftConflict, action, replacesShift]

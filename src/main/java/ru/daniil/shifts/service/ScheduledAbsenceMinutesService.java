@@ -28,6 +28,15 @@ public class ScheduledAbsenceMinutesService {
 
     public int partial(AppUser owner, DayEntry day, LocalDate date,
                        LocalTime start, LocalTime end, int plannedMinutes) {
+        return partial(owner, day, date, start, end, plannedMinutes, null);
+    }
+
+    public int partial(AppUser owner, DayEntry day, LocalDate date,
+                       LocalTime start, LocalTime end, int plannedMinutes,
+                       Integer unpaidBreakOverlapMinutes) {
+        if (unpaidBreakOverlapMinutes != null && (unpaidBreakOverlapMinutes < 0 || unpaidBreakOverlapMinutes > 1440)) {
+            throw ApiException.badRequest("Перерыв в интервале отсутствия: от 0 до 1440 минут");
+        }
         if (start == null || end == null || !end.isAfter(start)) {
             throw ApiException.badRequest("Укажи корректный интервал отсутствия в пределах дня");
         }
@@ -35,7 +44,10 @@ public class ScheduledAbsenceMinutesService {
             throw ApiException.badRequest(
                     "Для частичного отсутствия укажи исходную смену или выходной");
         }
-        if (plannedMinutes <= 0) return 0;
+        if (plannedMinutes <= 0) {
+            if (unpaidBreakOverlapMinutes != null && unpaidBreakOverlapMinutes != 0) throw ApiException.badRequest("На выходном нет перерыва исходной смены");
+            return 0;
+        }
 
         var shift = intervals.resolveShift(owner, day);
         Instant absenceStart = time.resolveLocalDateTime(
@@ -45,6 +57,15 @@ public class ScheduledAbsenceMinutesService {
 
         long gross = overlap(absenceStart, absenceEnd,
                 shift.startInstant(), shift.endInstant());
+        long elapsed = Duration.between(shift.startInstant(), shift.endInstant()).toMinutes();
+        long totalBreak = shift.breakMinutes();
+        if (unpaidBreakOverlapMinutes != null) {
+            long minimum = Math.max(0, totalBreak - (elapsed - gross));
+            long maximum = Math.min(totalBreak, gross);
+            if (unpaidBreakOverlapMinutes < minimum || unpaidBreakOverlapMinutes > maximum) {
+                throw ApiException.badRequest("Перерыв в интервале отсутствия должен быть от " + minimum + " до " + maximum + " минут по исходной смене");
+            }
+        }
         if (gross == 0) return 0;
 
         var paid = breaks.calendarPaidSegments(day);
@@ -53,6 +74,9 @@ public class ScheduledAbsenceMinutesService {
                     .mapToLong(segment -> overlap(absenceStart, absenceEnd,
                             segment.startInstant(), segment.endInstant()))
                     .sum();
+            if (unpaidBreakOverlapMinutes != null && gross - minutes != unpaidBreakOverlapMinutes) {
+                throw ApiException.badRequest("Указанный перерыв не совпадает с точными перерывами исходной смены");
+            }
             return Math.toIntExact(Math.min(plannedMinutes, minutes));
         }
 
@@ -60,9 +84,12 @@ public class ScheduledAbsenceMinutesService {
                 && !absenceEnd.isBefore(shift.endInstant())) {
             return plannedMinutes;
         }
+        if (unpaidBreakOverlapMinutes != null) {
+            return Math.toIntExact(Math.min(plannedMinutes, gross - unpaidBreakOverlapMinutes));
+        }
         if (shift.breakMinutes() > 0) {
             throw ApiException.badRequest(
-                    "Для частичного отсутствия нужны точные интервалы перерывов исходной смены");
+                    "Укажи неоплачиваемый перерыв внутри интервала отсутствия: 0, если он не пересекается с перерывом смены");
         }
         return Math.toIntExact(Math.min(plannedMinutes, gross));
     }

@@ -42,6 +42,7 @@ test('one absence composer routes balances and projects full and partial facts i
   await expect(page.locator('#absenceComposerContext')).toContainText('8 ч');
   await page.locator('#vacationStatus').selectOption('APPROVED');
   await page.locator('#vacationCoverage').selectOption('PARTIAL');
+  await page.locator('#vacationUnpaidBreakOverlap').fill('0');
   await page.locator('#vacationTitle').fill('Четыре часа отгула');
   await page.locator('#vacationStart').fill(today);
   await page.locator('#vacationStartTime').fill('09:00');

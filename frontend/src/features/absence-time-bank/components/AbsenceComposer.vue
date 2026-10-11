@@ -38,11 +38,14 @@ watch(() => [
   absenceDraft.value.coverage,
   absenceDraft.value.startTime,
   absenceDraft.value.endTime,
+  absenceDraft.value.unpaidBreakOverlapMinutes,
   absenceDraft.value.compensationPolicy,
 ], () => {
   if (!absenceModalOpen.value) return;
   if (absenceDraft.value.coverage === "PARTIAL") store.syncAbsenceCoverage();
   if (previewTimer !== null) window.clearTimeout(previewTimer);
+  // Blank is unknown, not zero. Exact automatic calculation remains available via Check.
+  if (absenceDraft.value.coverage === "PARTIAL" && !String(absenceDraft.value.unpaidBreakOverlapMinutes ?? "").trim()) return;
   previewTimer = window.setTimeout(() => { void store.previewAbsence(); }, 260);
 });
 
@@ -119,6 +122,10 @@ function typeChanged(): void {
             <input id="vacationEndTime" v-model="absenceDraft.endTime" type="time" required />
           </label>
         </div>
+        <label v-if="absenceDraft.coverage === 'PARTIAL'" class="domain-form__wide">Неоплачиваемый перерыв внутри отсутствия, мин
+          <input id="vacationUnpaidBreakOverlap" v-model="absenceDraft.unpaidBreakOverlapMinutes" type="number" min="0" max="1440" step="1" placeholder="Автоматически по точным перерывам смены" />
+          <small>Для плавающего перерыва укажи его пересечение с отсутствием. Введи 0, если перерыв находится вне этого интервала. Исходная смена должна быть задана в календаре.</small>
+        </label>
         <label class="domain-form__wide">Комментарий
           <textarea v-model="absenceDraft.note" maxlength="1000" rows="3"></textarea>
         </label>

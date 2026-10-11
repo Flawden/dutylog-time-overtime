@@ -1,3 +1,4 @@
+const { seedScheduledAbsence } = require('./scheduled-absence-fixture');
 const { test, expect } = require('./fixtures');
 const { registerAndOnboard, openView, waitForLedgerReady } = require('./helpers');
 
@@ -10,6 +11,8 @@ test('Overtime Next keeps the professional desktop ledger and replaces it with d
     return { firstDate:`${prefix}-01`, secondDate:`${prefix}-02`, usageDate:`${prefix}-03` };
   });
   const { firstDate, secondDate, usageDate } = dates;
+
+  await seedScheduledAbsence(page, [usageDate]);
 
   await page.evaluate(async ({ firstDate, secondDate, usageDate }) => {
     await jfetch('/api/overtime/credits', {
@@ -26,7 +29,7 @@ test('Overtime Next keeps the professional desktop ledger and replaces it with d
       method:'POST',
       body:{
         typeId:type.id, title:'Overtime Next FIFO usage', startDate:usageDate, endDate:usageDate,
-        status:'APPROVED', coverage:'PARTIAL', startTime:'09:00', endTime:'13:00',
+        status:'APPROVED', coverage:'PARTIAL', unpaidBreakOverlapMinutes:0, startTime:'09:00', endTime:'13:00',
         compensationPolicy:'OVERTIME_BANK'
       }
     });

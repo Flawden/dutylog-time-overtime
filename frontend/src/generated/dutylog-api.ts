@@ -2,12 +2,12 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  * Source: src/main/resources/static/openapi/dutylog-v1.yaml
- * SHA-256: 49004909ed0ca451ae1d7719c8a58a3d9b076c07743a76e8407887b2c68c9618
+ * SHA-256: 41260c626a49588e6535348bdb8c313b89e733690473ab6be6c8d51d470706f5
  * Generator: frontend/scripts/generate-openapi-contract.mjs
  * Contract: 148 operations, 165 schemas
  */
 
-export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "49004909ed0ca451ae1d7719c8a58a3d9b076c07743a76e8407887b2c68c9618";
+export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "41260c626a49588e6535348bdb8c313b89e733690473ab6be6c8d51d470706f5";
 
 export namespace DutyLogApiSchemas {
   export type AbsenceOccurrence = {
@@ -35,6 +35,7 @@ export namespace DutyLogApiSchemas {
     compensationPolicy?: "VACATION_ALLOWANCE" | "OVERTIME_BANK" | "SICK_PAY" | "UNPAID" | "NONE";
     compensatedMinutes?: number;
     linkedOvertimeUsageId?: number | null;
+    unpaidBreakOverlapMinutes?: number | null;
   };
 
   export type AbsencePeriod = DutyLogApiSchemas.AbsencePeriodInput & {
@@ -65,6 +66,7 @@ export namespace DutyLogApiSchemas {
     startTime?: string | null;
     endTime?: string | null;
     compensationPolicy?: "VACATION_ALLOWANCE" | "OVERTIME_BANK" | "SICK_PAY" | "UNPAID" | "NONE";
+    unpaidBreakOverlapMinutes?: number | null;
   };
 
   export type AbsencePeriodPatch = {
@@ -81,6 +83,7 @@ export namespace DutyLogApiSchemas {
     endTime?: string | null;
     clearTimes?: boolean;
     compensationPolicy?: "VACATION_ALLOWANCE" | "OVERTIME_BANK" | "SICK_PAY" | "UNPAID" | "NONE";
+    unpaidBreakOverlapMinutes?: number | null;
   };
 
   export type AbsencePreview = {
@@ -120,6 +123,7 @@ export namespace DutyLogApiSchemas {
     startTime?: string | null;
     endTime?: string | null;
     compensationPolicy?: "VACATION_ALLOWANCE" | "OVERTIME_BANK" | "SICK_PAY" | "UNPAID" | "NONE";
+    unpaidBreakOverlapMinutes?: number | null;
   };
 
   export type AbsencePreviewItem = {

@@ -2654,7 +2654,7 @@ else
 fi
 
 E2E_TESTS=$(grep -R --include='*.spec.js' -h -E '^[[:space:]]*test\(' e2e | wc -l | tr -d ' ')
-if [[ "$E2E_TESTS" == "63" ]]; then
+if [[ "$E2E_TESTS" == "64" ]]; then
   # v27.11.1 CI & Contract Hotfix
 contains CHANGES.md "v27.11.1 — CI & Contract Hotfix"
 contains README.md "v27.11.1 — CI & Contract Hotfix"
@@ -4935,20 +4935,20 @@ not_contains src/main/java/ru/daniil/shifts/module/DutyLogModules.java 'ModuleSe
   contains e2e/payroll-compensation-components.spec.js "persisted1.supersededById"
   contains e2e/payroll-compensation-components.spec.js "#payrollCompensationComponentBreakdown"
   contains e2e/payroll-compensation-components.spec.js "#compensationComponentPreset"
-  ok "Playwright test baseline: 63"
+  ok "Playwright test baseline: 64"
   # 8A4F3S ancillary staging E2E day-boundary alignment.
   contains e2e/calendar-comfort.spec.js "const canonicalToday = page.locator('#grid .todayCell');"
   contains frontend/src/features/settings-workspace/components/TimeSettingsCard.vue "&& (!effectiveFrom.value || effectiveFrom.value > currentWorkDate.value)"
   contains frontend/src/features/settings-workspace/components/TimeSettingsCard.vue "A timezone move can shift the canonical work date backwards across"
 else
-  fail "expected 63 Playwright tests, found $E2E_TESTS"
+  fail "expected 64 Playwright tests, found $E2E_TESTS"
 fi
 
 VITEST_TESTS=$(grep -R --include='*.spec.ts' --include='*.test.ts' -h -E '^[[:space:]]*(it|test)\(' frontend/src | wc -l | tr -d ' ')
-if [[ "$VITEST_TESTS" == "99" ]]; then
-  ok "Vitest case baseline: 99"
+if [[ "$VITEST_TESTS" == "100" ]]; then
+  ok "Vitest case baseline: 100"
 else
-  fail "expected 99 Vitest cases, found $VITEST_TESTS"
+  fail "expected 100 Vitest cases, found $VITEST_TESTS"
 fi
 
 
@@ -5620,10 +5620,10 @@ else
   fail "offline account isolation regression tests failed"
 fi
 
-if [[ "$TEST_METHODS" == "2815" ]]; then
-  ok "test method baseline: 2815"
+if [[ "$TEST_METHODS" == "2818" ]]; then
+  ok "test method baseline: 2818"
 else
-  fail "expected 2815 @Test methods, found $TEST_METHODS"
+  fail "expected 2818 @Test methods, found $TEST_METHODS"
 fi
 if [[ "$TEST_CLASSES" == "396" ]]; then
   ok "test class baseline: 396"
@@ -5679,7 +5679,7 @@ contains frontend/src/features/payroll/components/PayrollWorkspace.vue 'id="payr
 contains CHANGES.md 'OpenAPI is **138 operations / 144 schemas** with SHA-256 `1c76051d23596643e6cd2c92a248bfa7126c0e7a33c62587cea3c62a11d38352`.'
 contains docs/TEMPORAL_WORK_CONTEXT_NATIVE_PAY_PRICING_V27.46.1.md 'OpenAPI: 138 operations / 144 schemas.'
 contains frontend/src/generated/dutylog-api.ts "Contract: 148 operations, 165 schemas"
-contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "49004909ed0ca451ae1d7719c8a58a3d9b076c07743a76e8407887b2c68c9618"'
+contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "41260c626a49588e6535348bdb8c313b89e733690473ab6be6c8d51d470706f5"'
 contains docs/API.md "# DutyLog API v${VERSION}"
 contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
 contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
@@ -5805,7 +5805,7 @@ contains src/main/java/ru/daniil/shifts/service/PayrollService.java "Frozen comp
 contains src/main/java/ru/daniil/shifts/dto/Dtos.java "PayrollCompensationComponentLineDto"
 contains src/main/resources/static/openapi/dutylog-v1.yaml "PayrollCompensationComponentLine:"
 contains frontend/src/generated/dutylog-api.ts "Contract: 148 operations, 165 schemas"
-contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "49004909ed0ca451ae1d7719c8a58a3d9b076c07743a76e8407887b2c68c9618"'
+contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "41260c626a49588e6535348bdb8c313b89e733690473ab6be6c8d51d470706f5"'
 contains src/test/java/ru/daniil/shifts/service/PayrollCompensationComponentPayrollIntegrationTest.java "Премия за выживание после ночной смены"
 
 # v27.47.0 7A3A Immutable Generic Compensation Component Snapshot Foundation
@@ -5832,7 +5832,7 @@ contains src/main/resources/static/openapi/dutylog-v1.yaml "operationId: listPay
 contains src/main/resources/static/openapi/dutylog-v1.yaml "operationId: listEffectivePayrollCompensationComponents"
 contains src/main/resources/static/openapi/dutylog-v1.yaml "operationId: upsertPayrollCompensationComponentVersion"
 contains frontend/src/generated/dutylog-api.ts "Contract: 148 operations, 165 schemas"
-contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "49004909ed0ca451ae1d7719c8a58a3d9b076c07743a76e8407887b2c68c9618"'
+contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "41260c626a49588e6535348bdb8c313b89e733690473ab6be6c8d51d470706f5"'
 contains frontend/src/generated/dutylog-api.ts '"createPayrollCompensationComponent": { method: "POST", path: "/api/v1/payroll/compensation-components" }'
 contains frontend/src/generated/dutylog-api.ts '"listPayrollCompensationComponentHistory": { method: "GET", path: "/api/v1/payroll/compensation-components" }'
 contains frontend/src/generated/dutylog-api.ts '"listEffectivePayrollCompensationComponents": { method: "GET", path: "/api/v1/payroll/compensation-components/effective/{month}" }'

@@ -191,7 +191,7 @@ public class VacationPlannerService {
         AbsencePeriod current = HOURS_ONLY.equals(req.coverage())
                 ? requireOwnedPeriod(user, req.excludePeriodId()) : null;
         AbsenceShape shape = current == null
-                ? parseShape(req.startDate(), req.endDate(), req.coverage(), req.startTime(), req.endTime())
+                ? parseShape(req.startDate(), req.endDate(), req.coverage(), req.startTime(), req.endTime(), req.unpaidBreakOverlapMinutes())
                 : parseHoursOnlyShape(current, req.startDate(), req.endDate());
         String compensationPolicy = resolveCompensationPolicy(type, req.compensationPolicy(), null);
         return buildPreview(user, settings, type, shape, req.excludePeriodId(), compensationPolicy,
@@ -225,7 +225,7 @@ public class VacationPlannerService {
         VacationSettings settings = lockSettings(user);
         ensureDefaultTypes(user);
         AbsenceType type = requireOwnedType(user, req.typeId());
-        AbsenceShape shape = parseShape(req.startDate(), req.endDate(), req.coverage(), req.startTime(), req.endTime());
+        AbsenceShape shape = parseShape(req.startDate(), req.endDate(), req.coverage(), req.startTime(), req.endTime(), req.unpaidBreakOverlapMinutes());
         String status = normalizeStatus(req.status());
         ledgerIntegrityService.assertRangeOpen(user, shape.range().from(), shape.range().to());
         if (ledgerIntegrityService.consumesBalance(status)) validateNoOverlap(user, shape, null);
@@ -267,7 +267,9 @@ public class VacationPlannerService {
                 : req.endTime() != null ? req.endTime() : timeString(period.getEndTime());
         AbsenceShape shape = HOURS_ONLY.equals(coverage)
                 ? parseHoursOnlyShape(period, start, end)
-                : parseShape(start, end, coverage, startTime, endTime);
+                : parseShape(start, end, coverage, startTime, endTime,
+                        req.coverage() != null || req.unpaidBreakOverlapMinutes() != null ? req.unpaidBreakOverlapMinutes()
+                                : PARTIAL.equals(coverage) ? period.getUnpaidBreakOverlapMinutes() : null);
         String status = req.status() == null ? period.getStatus() : normalizeStatus(req.status());
         ledgerIntegrityService.assertRangeOpen(user, shape.range().from(), shape.range().to());
         if (ledgerIntegrityService.consumesBalance(status)) validateNoOverlap(user, shape, id);
@@ -417,7 +419,7 @@ public class VacationPlannerService {
                         timeString(period.getEndTime()), period.getChargedMinutes(), replaces,
                         plan == null ? null : plan.name(), plan == null ? null : plan.color(), plan == null ? 0 : plan.minutes(),
                         period.getCompensationPolicy(), period.getCompensatedMinutes(),
-                        overtimeService.linkedUsageId(user, period.getId())
+                        overtimeService.linkedUsageId(user, period.getId()), period.getUnpaidBreakOverlapMinutes()
                 ));
             }
         }
@@ -661,7 +663,7 @@ public class VacationPlannerService {
                 type.getBalancePolicy(), period.getCoverage(), timeString(period.getStartTime()), timeString(period.getEndTime()),
                 period.getChargedMinutes(), FULL_DAY.equals(period.getCoverage()) && type.isFullDayReplacesShift(),
                 period.getCompensationPolicy(), period.getCompensatedMinutes(),
-                overtimeService.linkedUsageId(period.getOwner(), period.getId())
+                overtimeService.linkedUsageId(period.getOwner(), period.getId()), period.getUnpaidBreakOverlapMinutes()
         );
     }
 
@@ -728,14 +730,15 @@ public class VacationPlannerService {
 
     private int calculateChargedMinutes(AppUser user, VacationSettings settings, AbsenceType type, AbsenceShape shape,
                                         String compensationPolicy) {
-        if (!OVERTIME_BANK.equals(compensationPolicy)) return 0;
-        if (PARTIAL.equals(shape.coverage())) {
+        if (PARTIAL.equals(shape.coverage()) && (OVERTIME_BANK.equals(compensationPolicy) || shape.unpaidBreakOverlapMinutes() != null)) {
             LocalDate date = shape.range().from();
             DayEntry day = dayRepository.findByOwnerAndDate(user, date).orElse(null);
             ShiftPlan plan = shiftPlans(user, date, date).get(date);
-            return scheduledAbsences.partial(user, day, date,
-                    shape.startTime(), shape.endTime(), plan == null ? 0 : plan.minutes());
+            int minutes = scheduledAbsences.partial(user, day, date,
+                    shape.startTime(), shape.endTime(), plan == null ? 0 : plan.minutes(), shape.unpaidBreakOverlapMinutes());
+            return OVERTIME_BANK.equals(compensationPolicy) ? minutes : 0;
         }
+        if (!OVERTIME_BANK.equals(compensationPolicy)) return 0;
         Map<LocalDate, ShiftPlan> plans = shiftPlans(user, shape.range().from(), shape.range().to());
         int total = 0;
         for (LocalDate date = shape.range().from(); !date.isAfter(shape.range().to()); date = date.plusDays(1)) {
@@ -768,17 +771,19 @@ public class VacationPlannerService {
         return Math.toIntExact(Duration.between(LocalTime.parse(start), LocalTime.parse(end)).toMinutes());
     }
 
-    private AbsenceShape parseShape(String from, String to, String coverageValue, String startTimeValue, String endTimeValue) {
+    private AbsenceShape parseShape(String from, String to, String coverageValue, String startTimeValue, String endTimeValue, Integer unpaidBreakOverlapMinutes) {
         DateRange range = validateRange(
                 parseDate(from, "Дата начала должна быть в формате yyyy-MM-dd"),
                 parseDate(to, "Дата окончания должна быть в формате yyyy-MM-dd"));
         String coverage = normalizeCoverage(coverageValue);
-        if (FULL_DAY.equals(coverage)) return new AbsenceShape(range, coverage, null, null);
+        if (unpaidBreakOverlapMinutes != null && (unpaidBreakOverlapMinutes < 0 || unpaidBreakOverlapMinutes > 1440)) throw ApiException.badRequest("Некорректный перерыв в интервале отсутствия");
+        if (!PARTIAL.equals(coverage) && unpaidBreakOverlapMinutes != null) throw ApiException.badRequest("Перерыв указывается только для части дня");
+        if (FULL_DAY.equals(coverage)) return new AbsenceShape(range, coverage, null, null, null);
         if (!range.from().equals(range.to())) throw ApiException.badRequest("Частичный отгул должен находиться в пределах одного дня");
         LocalTime start = parseTime(startTimeValue, "Укажите время начала частичного отсутствия");
         LocalTime end = parseTime(endTimeValue, "Укажите время окончания частичного отсутствия");
         if (!end.isAfter(start)) throw ApiException.badRequest("Время окончания должно быть позже времени начала");
-        return new AbsenceShape(range, coverage, start, end);
+        return new AbsenceShape(range, coverage, start, end, unpaidBreakOverlapMinutes);
     }
 
     private void applyShape(AbsencePeriod period, AbsenceShape shape) {
@@ -787,6 +792,7 @@ public class VacationPlannerService {
         period.setCoverage(shape.coverage());
         period.setStartTime(shape.startTime());
         period.setEndTime(shape.endTime());
+        period.setUnpaidBreakOverlapMinutes(shape.unpaidBreakOverlapMinutes());
     }
 
     private AbsenceShape parseHoursOnlyShape(AbsencePeriod current, String from, String to) {
@@ -802,7 +808,7 @@ public class VacationPlannerService {
         if (!range.from().equals(range.to())) {
             throw ApiException.badRequest("Импортированный объём часов должен относиться к одному дню");
         }
-        return new AbsenceShape(range, HOURS_ONLY, null, null);
+        return new AbsenceShape(range, HOURS_ONLY, null, null, null);
     }
 
     private List<OvertimeUsage> selectedLegacyUsages(AppUser user, LegacyOvertimeUsageMigrationRequest req) {
@@ -966,7 +972,7 @@ public class VacationPlannerService {
     private record DateRange(LocalDate from, LocalDate to, int days) {}
     private record WorkYear(LocalDate start, LocalDate end) {}
     private record AllowanceProjection(WorkYear year, int available, int plannedBefore, int projected, int remaining) {}
-    private record AbsenceShape(DateRange range, String coverage, LocalTime startTime, LocalTime endTime) {}
+    private record AbsenceShape(DateRange range, String coverage, LocalTime startTime, LocalTime endTime, Integer unpaidBreakOverlapMinutes) {}
     private record ShiftPlan(String name, String color, int minutes) {}
     private static final class MutableTypeSummary {
         final Long typeId; final String typeName; final String typeColor; final String systemCode; final String balancePolicy;

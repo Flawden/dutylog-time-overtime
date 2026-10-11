@@ -43,6 +43,9 @@ public class AbsencePeriod {
     @Column(name = "end_time")
     private LocalTime endTime;
 
+    @Column(name = "unpaid_break_overlap_minutes")
+    private Integer unpaidBreakOverlapMinutes;
+
     @Column(name = "charged_minutes", nullable = false)
     private int chargedMinutes;
 
@@ -84,6 +87,8 @@ public class AbsencePeriod {
     public void setCoverage(String coverage) { this.coverage = coverage; }
     public LocalTime getStartTime() { return startTime; }
     public void setStartTime(LocalTime startTime) { this.startTime = startTime; }
+    public Integer getUnpaidBreakOverlapMinutes() { return unpaidBreakOverlapMinutes; }
+    public void setUnpaidBreakOverlapMinutes(Integer value) { unpaidBreakOverlapMinutes = value; }
     public LocalTime getEndTime() { return endTime; }
     public void setEndTime(LocalTime endTime) { this.endTime = endTime; }
     public int getChargedMinutes() { return Math.max(0, chargedMinutes); }

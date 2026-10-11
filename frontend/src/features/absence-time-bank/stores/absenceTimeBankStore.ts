@@ -30,6 +30,7 @@ import {
   defaultCompensation,
   draftFromPeriod,
   newAbsenceDraft,
+  absenceBreakOverlap,
   newCreditDraft,
   newScenarioDraft,
   newSettlementDraft,
@@ -247,11 +248,12 @@ export const useAbsenceTimeBankStore = defineStore("absence-time-bank", {
           coverage: draft.coverage,
           startTime: draft.coverage === "PARTIAL" ? draft.startTime : null,
           endTime: draft.coverage === "PARTIAL" ? draft.endTime : null,
+          unpaidBreakOverlapMinutes: absenceBreakOverlap(draft),
           compensationPolicy: draft.compensationPolicy,
         }, controller.signal);
-        if (previewController === controller) this.absencePreview = result;
+        if (previewController === controller) { this.absencePreview = result; this.error = ""; }
       } catch (error) {
-        if (previewController === controller && !isAbortError(error)) this.error = this.errorMessage(error);
+        if (previewController === controller && !isAbortError(error)) { this.absencePreview = null; this.error = this.errorMessage(error); }
       } finally {
         if (previewController === controller) {
           previewController = null;

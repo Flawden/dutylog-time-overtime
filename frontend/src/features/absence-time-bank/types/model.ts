@@ -140,6 +140,7 @@ export function newAbsenceDraft(date: string = todayIso()): AbsenceDraft {
     startTime: "09:00",
     endTime: "18:00",
     compensationPolicy: "NONE",
+    unpaidBreakOverlapMinutes: "",
   };
 }
 
@@ -156,6 +157,7 @@ export function draftFromPeriod(period: AbsencePeriod): AbsenceDraft {
     startTime: String(period.startTime ?? "09:00"),
     endTime: String(period.endTime ?? "18:00"),
     compensationPolicy: period.compensationPolicy ?? "NONE",
+    unpaidBreakOverlapMinutes: period.unpaidBreakOverlapMinutes == null ? "" : String(period.unpaidBreakOverlapMinutes),
   };
 }
 
@@ -173,6 +175,7 @@ export function absenceCreateBody(draft: AbsenceDraft): AbsencePeriodInput {
   if (draft.coverage === "PARTIAL") {
     body.startTime = draft.startTime;
     body.endTime = draft.endTime;
+    body.unpaidBreakOverlapMinutes = absenceBreakOverlap(draft);
   }
   return body;
 }
@@ -191,6 +194,7 @@ export function absencePatchBody(draft: AbsenceDraft): AbsencePeriodPatch {
     startTime: draft.coverage === "PARTIAL" ? draft.startTime : null,
     endTime: draft.coverage === "PARTIAL" ? draft.endTime : null,
     clearTimes: draft.coverage !== "PARTIAL",
+    unpaidBreakOverlapMinutes: absenceBreakOverlap(draft),
     compensationPolicy: draft.compensationPolicy,
   };
 }
@@ -631,4 +635,11 @@ export function scenarioDescription(scenario: QuickScenario): string {
       ? `${scenario.endFixedTime ?? "--:--"} · день ${scenario.endDayOffset >= 0 ? "+" : ""}${scenario.endDayOffset}`
       : "до конца смены";
   return `${start} → ${end}`;
+}
+
+export function absenceBreakOverlap(draft: AbsenceDraft): number | null {
+  if (draft.coverage !== "PARTIAL" || !String(draft.unpaidBreakOverlapMinutes ?? "").trim()) return null;
+  const value = Number(draft.unpaidBreakOverlapMinutes);
+  if (!Number.isInteger(value) || value < 0 || value > 1440) throw new Error("Перерыв в интервале отсутствия: целое число от 0 до 1440 минут");
+  return value;
 }

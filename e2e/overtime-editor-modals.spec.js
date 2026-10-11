@@ -1,3 +1,4 @@
+const { seedScheduledAbsence } = require('./scheduled-absence-fixture');
 const { test, expect } = require('./fixtures');
 const {
   registerAndOnboard,
@@ -80,6 +81,8 @@ test('deleting one canonical split time-off keeps every credit and the other abs
   };
   const dates = [0, 1, 2, 3].map(days => plusDays(base, days));
 
+  await seedScheduledAbsence(page, [dates[2], dates[3]]);
+
   const callApi = async (path, method, body) => page.evaluate(async ({ path, method, body }) => {
     const headers = body ? { 'Content-Type': 'application/json' } : {};
     if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
@@ -108,11 +111,11 @@ test('deleting one canonical split time-off keeps every credit and the other abs
   const typeId = planner.types.find(item => item.systemCode === 'TIME_OFF').id;
   const firstAbsence = await callApi('/api/v1/vacation-planner/absences', 'POST', {
     typeId, title:'Split time-off', startDate:dates[2], endDate:dates[2], status:'APPROVED',
-    coverage:'PARTIAL', startTime:'09:00', endTime:'13:00', compensationPolicy:'OVERTIME_BANK'
+    coverage:'PARTIAL', unpaidBreakOverlapMinutes:0, startTime:'09:00', endTime:'13:00', compensationPolicy:'OVERTIME_BANK'
   });
   const secondAbsence = await callApi('/api/v1/vacation-planner/absences', 'POST', {
     typeId, title:'Surviving time-off', startDate:dates[3], endDate:dates[3], status:'APPROVED',
-    coverage:'PARTIAL', startTime:'09:00', endTime:'12:00', compensationPolicy:'OVERTIME_BANK'
+    coverage:'PARTIAL', unpaidBreakOverlapMinutes:0, startTime:'09:00', endTime:'12:00', compensationPolicy:'OVERTIME_BANK'
   });
   account = await callApi('/api/overtime/account', 'GET');
   const firstUsageId = account.usages.find(row => row.sourceAbsenceId === firstAbsence.id).id;

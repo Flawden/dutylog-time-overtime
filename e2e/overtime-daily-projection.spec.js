@@ -1,3 +1,4 @@
+const { seedScheduledAbsence } = require('./scheduled-absence-fixture');
 const { test, expect } = require('./fixtures');
 const { registerAndOnboard, waitForApi, openView, runWithOptionalHistoricalTimezoneConfirmation } = require('./helpers');
 
@@ -28,6 +29,8 @@ function sumForDate(rows, date, field) {
 test('overtime and FIFO are redistributed by current timezone day without moving absolute minutes', async ({ page }) => {
   await registerAndOnboard(page, { preset: 'full', prefix: 'overtime-projection' });
   await setTimezone(page, 'Europe/Moscow');
+  await seedScheduledAbsence(page, ['2026-07-05']);
+
 
   await page.evaluate(() => jfetch('/api/overtime/credits', {
     method:'POST',
@@ -48,7 +51,7 @@ test('overtime and FIFO are redistributed by current timezone day without moving
       method:'POST',
       body:{
         typeId:type.id, title:'Projection FIFO', startDate:'2026-07-05', endDate:'2026-07-05',
-        status:'APPROVED', coverage:'PARTIAL', startTime:'09:00', endTime:'12:00',
+        status:'APPROVED', coverage:'PARTIAL', unpaidBreakOverlapMinutes:0, startTime:'09:00', endTime:'12:00',
         compensationPolicy:'OVERTIME_BANK'
       }
     });

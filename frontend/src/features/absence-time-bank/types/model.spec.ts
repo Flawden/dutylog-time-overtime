@@ -1,3 +1,4 @@
+import { newAbsenceDraft, absenceCreateBody, absencePatchBody } from "./model";
 import { describe, expect, it } from "vitest";
 import type { OvertimeAccountReadModel, OvertimeCredit, OvertimeUsage, QuickScenario } from "./domain";
 import {
@@ -274,4 +275,15 @@ describe("absence and time-bank domain model", () => {
     ).toBe("Старое списание");
   });
 
+});
+
+
+it("preserves explicit zero and floating break minutes in absence bodies", () => {
+  const draft = newAbsenceDraft("2026-09-14");
+  draft.typeId = 1; draft.coverage = "PARTIAL"; draft.unpaidBreakOverlapMinutes = "0";
+  expect(absenceCreateBody(draft).unpaidBreakOverlapMinutes).toBe(0);
+  draft.unpaidBreakOverlapMinutes = "30";
+  expect(absencePatchBody(draft).unpaidBreakOverlapMinutes).toBe(30);
+  draft.coverage = "FULL_DAY";
+  expect(absencePatchBody(draft).unpaidBreakOverlapMinutes).toBeNull();
 });

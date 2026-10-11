@@ -33,6 +33,7 @@ test('partial time off keeps the planned shift and spends the unified overtime b
   await page.locator('#vacationStatus').selectOption('APPROVED');
   await expect(page.locator('#vacationCompensation')).toHaveValue('OVERTIME_BANK');
   await page.locator('#vacationCoverage').selectOption('PARTIAL');
+  await page.locator('#vacationUnpaidBreakOverlap').fill('0');
   await expect(page.locator('#vacationPartialTimes')).toBeVisible();
   await expect(page.locator('#vacationEnd')).toBeDisabled();
   await page.locator('#vacationTitle').fill('Врач');
@@ -88,4 +89,32 @@ test('partial time off keeps the planned shift and spends the unified overtime b
   await page.locator(`[data-delete-absence="${created.id}"]`).click();
   await deleted;
   await expect(page.locator('#timeOffRemaining')).toContainText('8');
+});
+
+
+test('floating unpaid break overlap is explicit and deducted from partial time off', async ({ page }) => {
+  await registerAndOnboard(page, { preset:'full', prefix:'floating-break' });
+  const date = await currentLocalDateKey(page);
+  await page.evaluate(async date => {
+    const shift = await jfetch('/api/shift-types', { method:'POST', body:{ name:'Floating break', hours:7.5, plannedHours:7.5, startTime:'09:00', endTime:'17:00', breakMinutes:30, color:'#123456' } });
+    await jfetch(`/api/days/${date}`, { method:'PUT', body:{ shiftTypeId:shift.id } });
+    await jfetch('/api/overtime/credits', { method:'POST', body:{ date, hours:8, reason:'Floating break source' } });
+  }, date);
+  await openView(page, 'vacation');
+  await page.locator('#vacationComposerOpen').click();
+  const type = await page.locator('#vacationType option', { hasText:'Отгул' }).getAttribute('value');
+  await page.locator('#vacationType').selectOption(type);
+  await page.locator('#vacationStatus').selectOption('APPROVED');
+  await page.locator('#vacationStart').fill(date);
+  await page.locator('#vacationCoverage').selectOption('PARTIAL');
+  await page.locator('#vacationStartTime').fill('09:00');
+  await page.locator('#vacationEndTime').fill('11:00');
+  await page.locator('#vacationUnpaidBreakOverlap').fill('30');
+  const response = waitForApi(page, 'POST', '/api/v1/vacation-planner/absences', 201);
+  await page.locator('#vacationSaveBtn').click();
+  const saved = await (await response).json();
+  expect(saved.chargedMinutes).toBe(90);
+  expect(saved.unpaidBreakOverlapMinutes).toBe(30);
+  const account = await page.evaluate(() => jfetch('/api/overtime/account'));
+  expect(account.balanceHours).toBe(6.5);
 });

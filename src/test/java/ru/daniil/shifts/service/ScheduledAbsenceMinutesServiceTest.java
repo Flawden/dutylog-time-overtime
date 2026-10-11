@@ -84,4 +84,25 @@ class ScheduledAbsenceMinutesServiceTest {
                 () -> assertEquals(60, service.partial(owner, day, date.plusDays(1),
                         LocalTime.of(7, 0), LocalTime.of(9, 0), 720)));
     }
+
+    @Test
+    void floatingBreakRequiresExplicitFeasibleOverlap() {
+        AppUser owner = owner();
+        DayEntry day = shift(owner, LocalTime.of(9, 0), LocalTime.of(17, 0));
+        day.getShiftType().setBreakMinutes(30);
+        assertEquals(120, service.partial(owner, day, date, LocalTime.of(9, 0), LocalTime.of(11, 0), 450, 0));
+        assertEquals(90, service.partial(owner, day, date, LocalTime.of(9, 0), LocalTime.of(11, 0), 450, 30));
+        assertThrows(ru.daniil.shifts.service.exception.ApiException.class, () -> service.partial(owner, day, date, LocalTime.of(9, 0), LocalTime.of(11, 0), 450, 31));
+        assertThrows(ru.daniil.shifts.service.exception.ApiException.class, () -> service.partial(owner, day, date, LocalTime.of(9, 0), LocalTime.of(16, 50), 450, 0));
+    }
+
+    @Test
+    void overlapCannotBeAssignedToTimeOutsideShiftOrDayOff() {
+        AppUser owner = owner();
+        DayEntry day = shift(owner, LocalTime.of(9, 0), LocalTime.of(17, 0));
+        day.getShiftType().setBreakMinutes(30);
+        assertThrows(ru.daniil.shifts.service.exception.ApiException.class, () -> service.partial(owner, day, date, LocalTime.of(7, 0), LocalTime.of(8, 0), 450, 1));
+        assertEquals(0, service.partial(owner, day, date, LocalTime.of(7, 0), LocalTime.of(8, 0), 450, 0));
+        assertThrows(ru.daniil.shifts.service.exception.ApiException.class, () -> service.partial(owner, day, date, LocalTime.of(9, 0), LocalTime.of(11, 0), 0, 1));
+    }
 }

@@ -431,10 +431,29 @@ class VacationPlannerServiceTest {
                         date.toString(), date.toString(), "APPROVED", null,
                         "PARTIAL", "09:00", "11:00", "OVERTIME_BANK")));
 
-        assertTrue(error.getMessage().contains("точные интервалы перерывов"));
+        assertTrue(error.getMessage().contains("неоплачиваемый перерыв"));
         assertEquals(before, overtime.balanceMinutes(owner));
         assertTrue(planner.occurrences(owner, date, date).isEmpty());
         assertEquals(type.getId(), days.findByOwnerAndDate(owner, date)
                 .orElseThrow().getShiftType().getId());
+    }
+
+    @Test
+    void floatingBreakEvidenceSurvivesReadAndStatusChanges() {
+        earnOvertime(8.0);
+        var shift = partialShiftRepository.saveAndFlush(new ru.daniil.shifts.model.ShiftType(owner, "Floating", 7.5, "#123456", false, java.time.LocalTime.of(9, 0), java.time.LocalTime.of(17, 0), 30, 7.5));
+        LocalDate date = LocalDate.parse("2026-08-06");
+        DayEntry entry = new DayEntry(owner, date); entry.setShiftType(shift); days.saveAndFlush(entry);
+        var type = planner.types(owner).stream().filter(item -> "TIME_OFF".equals(item.systemCode())).findFirst().orElseThrow();
+        var created = planner.createPeriod(owner, new AbsencePeriodCreateRequest(type.id(), "Floating", date.toString(), date.toString(), "PLANNED", null, "PARTIAL", "09:00", "11:00", "OVERTIME_BANK", 30));
+        assertEquals(90, created.chargedMinutes());
+        assertEquals(30, created.unpaidBreakOverlapMinutes());
+        var approved = planner.updatePeriod(owner, created.id(), new AbsencePeriodUpdateRequest(null, null, null, null, "APPROVED", null, false, false));
+        assertEquals(30, approved.unpaidBreakOverlapMinutes());
+        assertEquals(90, approved.chargedMinutes());
+        assertEquals(30, planner.occurrences(owner, date, date).get(0).unpaidBreakOverlapMinutes());
+        var summary = timeCompensation.summary(owner, date, date);
+        assertEquals(90, summary.absenceMinutes());
+        assertEquals(360, summary.workedMinutes());
     }
 }

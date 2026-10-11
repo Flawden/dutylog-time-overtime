@@ -1,3 +1,4 @@
+const { seedScheduledAbsence } = require('./scheduled-absence-fixture');
 const { test, expect } = require('./fixtures');
 const { registerAndOnboard, openView, waitForLedgerReady, waitForApi } = require('./helpers');
 
@@ -8,6 +9,8 @@ test('canonical absence ledger owns new time-off while overtime keeps FIFO stati
     value.setDate(value.getDate() + 7);
     return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`;
   });
+
+  await seedScheduledAbsence(page, [date]);
 
   await page.evaluate(() => jfetch('/api/overtime/credits', {
     method:'POST', body:{ date:new Date().toISOString().slice(0, 10), hours:8, reason:'Canonical source' }
@@ -30,6 +33,7 @@ test('canonical absence ledger owns new time-off while overtime keeps FIFO stati
   await expect(page.locator('#vacationCompensation')).toHaveValue('OVERTIME_BANK');
   await page.locator('#vacationStart').fill(date);
   await page.locator('#vacationCoverage').selectOption('PARTIAL');
+  await page.locator('#vacationUnpaidBreakOverlap').fill('0');
   await page.locator('#vacationStartTime').fill('09:00');
   await page.locator('#vacationEndTime').fill('13:00');
   await page.locator('#vacationStatus').selectOption('APPROVED');
@@ -71,7 +75,7 @@ test('canonical absence ledger owns new time-off while overtime keeps FIFO stati
       method:'PATCH',
       body:{
         typeId:unpaidId, title:'Canonical unpaid', startDate:date, endDate:date,
-        status:'APPROVED', coverage:'PARTIAL', startTime:'09:00', endTime:'13:00',
+        status:'APPROVED', coverage:'PARTIAL', unpaidBreakOverlapMinutes:0, startTime:'09:00', endTime:'13:00',
         compensationPolicy:'UNPAID'
       }
     });

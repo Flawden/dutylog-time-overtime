@@ -1,9 +1,13 @@
+const { seedScheduledAbsence } = require('./scheduled-absence-fixture');
 const { test, expect } = require('./fixtures');
 const { registerAndOnboard, openView } = require('./helpers');
 
 test('approval workflow reserves posts reverses and locks a closed accounting period', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 960 });
   await registerAndOnboard(page, { preset:'full', prefix:'ledgerapproval' });
+
+  const day = await page.evaluate(() => { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-10`; });
+  await seedScheduledAbsence(page, [day]);
 
   const result = await page.evaluate(async () => {
     const token = decodeURIComponent((document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/) || [])[1] || '');
@@ -28,7 +32,7 @@ test('approval workflow reserves posts reverses and locks a closed accounting pe
 
     const created = await call('/api/vacation-planner/absences', { method:'POST', body:JSON.stringify({
       typeId:timeOff.id, title:'Workflow отгул', startDate:day, endDate:day, status:'DRAFT',
-      coverage:'PARTIAL', startTime:'09:00', endTime:'11:00', compensationPolicy:'OVERTIME_BANK'
+      coverage:'PARTIAL', unpaidBreakOverlapMinutes:0, startTime:'09:00', endTime:'11:00', compensationPolicy:'OVERTIME_BANK'
     }) });
     const id = created.body.id;
     const submitted = await call(`/api/vacation-planner/absences/${id}`, { method:'PATCH', body:JSON.stringify({ status:'SUBMITTED' }) });

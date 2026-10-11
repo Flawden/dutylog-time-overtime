@@ -1,3 +1,4 @@
+const { seedScheduledAbsence } = require('./scheduled-absence-fixture');
 const { test, expect } = require('./fixtures');
 const { registerAndOnboard, openView, waitForLedgerReady, waitForVacationReady } = require('./helpers');
 
@@ -10,6 +11,8 @@ test('absence remains the event owner while the time bank explains reservations 
     value.setDate(value.getDate() + 7);
     return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`;
   });
+
+  await seedScheduledAbsence(page, [date]);
 
   const created = await page.evaluate(async dateKey => {
     await jfetch('/api/overtime/credits', {
@@ -26,7 +29,7 @@ test('absence remains the event owner while the time bank explains reservations 
         startDate:dateKey,
         endDate:dateKey,
         status:'PLANNED',
-        coverage:'PARTIAL',
+        coverage:'PARTIAL', unpaidBreakOverlapMinutes:0,
         startTime:'09:00',
         endTime:'13:00',
         compensationPolicy:'OVERTIME_BANK'
