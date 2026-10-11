@@ -106,11 +106,12 @@ class VacationPlannerServiceTest {
 
     @Test
     void partialTimeOffChargesHoursPreservesShiftAndAllowsSeparateWindows() {
+        preparePartialSchedule();
         planner.updateSettings(owner, new VacationSettingsUpdateRequest(28, 0, "CALENDAR_DAYS", 1, 1, 0.0, 8.0));
         earnOvertime(8.0);
         AbsenceTypeDto timeOff = planner.types(owner).stream()
                 .filter(type -> "TIME_OFF".equals(type.systemCode())).findFirst().orElseThrow();
-        DayEntry shift = new DayEntry(owner, LocalDate.parse("2026-08-06"));
+        DayEntry shift = days.findByOwnerAndDate(owner, LocalDate.parse("2026-08-06")).orElseThrow();
         shift.setShiftType(shiftTypes.requireOwnedShiftType(owner, shifts.get("Дневная")));
         days.saveAndFlush(shift);
 
@@ -159,6 +160,7 @@ class VacationPlannerServiceTest {
 
     @Test
     void overtimeCoveredAbsenceCreatesLockedUsageAndDeleteRestoresFifoBalance() {
+        preparePartialSchedule();
         earnOvertime(12.0);
         AbsenceTypeDto timeOff = planner.types(owner).stream()
                 .filter(type -> "TIME_OFF".equals(type.systemCode())).findFirst().orElseThrow();
@@ -197,10 +199,11 @@ class VacationPlannerServiceTest {
 
     @Test
     void unifiedMonthlyReadModelJoinsPlanFactOvertimeAndUnpaidTime() {
-        DayEntry firstShift = new DayEntry(owner, LocalDate.parse("2026-08-06"));
+        preparePartialSchedule();
+        DayEntry firstShift = days.findByOwnerAndDate(owner, LocalDate.parse("2026-08-06")).orElseThrow();
         firstShift.setShiftType(shiftTypes.requireOwnedShiftType(owner, shifts.get("Дневная")));
         days.saveAndFlush(firstShift);
-        DayEntry secondShift = new DayEntry(owner, LocalDate.parse("2026-08-07"));
+        DayEntry secondShift = days.findByOwnerAndDate(owner, LocalDate.parse("2026-08-07")).orElseThrow();
         secondShift.setShiftType(shiftTypes.requireOwnedShiftType(owner, shifts.get("Дневная")));
         days.saveAndFlush(secondShift);
         overtime.createCredit(owner, new OvertimeCreditCreateRequest(
@@ -363,5 +366,75 @@ class VacationPlannerServiceTest {
     private void assertBadRequest(org.junit.jupiter.api.function.Executable action) {
         ApiException error = assertThrows(ApiException.class, action);
         assertEquals(HttpStatus.BAD_REQUEST, error.getStatus());
+    }
+
+    @Autowired
+    ru.daniil.shifts.repo.ShiftTypeRepository partialShiftRepository;
+
+    private void preparePartialSchedule() {
+        var type = partialShiftRepository.saveAndFlush(
+                new ru.daniil.shifts.model.ShiftType(
+                        owner, "Точная тестовая смена", 8.0, "#123456", false,
+                        java.time.LocalTime.of(9, 0),
+                        java.time.LocalTime.of(17, 0), 0, 8.0));
+        shifts = new java.util.HashMap<>(shifts);
+        shifts.put("Дневная", type.getId());
+        for (String value : java.util.List.of("2026-08-06", "2026-08-07")) {
+            LocalDate date = LocalDate.parse(value);
+            DayEntry entry = days.findByOwnerAndDate(owner, date)
+                    .orElseGet(() -> new DayEntry(owner, date));
+            entry.setShiftType(type);
+            days.saveAndFlush(entry);
+        }
+    }
+
+    @Test
+    void partialTimeOffRequiresKnownScheduleWithoutConsumingBalance() {
+        earnOvertime(8.0);
+        AbsenceTypeDto type = planner.types(owner).stream()
+                .filter(item -> "TIME_OFF".equals(item.systemCode()))
+                .findFirst().orElseThrow();
+        int before = overtime.balanceMinutes(owner);
+
+        ApiException error = assertThrows(ApiException.class, () ->
+                planner.createPeriod(owner, new AbsencePeriodCreateRequest(
+                        type.id(), "Неизвестный график",
+                        "2026-08-06", "2026-08-06", "APPROVED", null,
+                        "PARTIAL", "09:00", "11:00", "OVERTIME_BANK")));
+
+        assertTrue(error.getMessage().contains("исходную смену или выходной"));
+        assertEquals(before, overtime.balanceMinutes(owner));
+        assertTrue(planner.occurrences(owner, LocalDate.parse("2026-08-06"),
+                LocalDate.parse("2026-08-06")).isEmpty());
+    }
+
+    @Test
+    void partialTimeOffRequiresBreakPlacementWithoutConsumingBalance() {
+        earnOvertime(8.0);
+        var type = partialShiftRepository.saveAndFlush(
+                new ru.daniil.shifts.model.ShiftType(
+                        owner, "Перерыв без положения", 7.5, "#123456", false,
+                        java.time.LocalTime.of(9, 0),
+                        java.time.LocalTime.of(17, 0), 30, 7.5));
+        LocalDate date = LocalDate.parse("2026-08-06");
+        DayEntry entry = new DayEntry(owner, date);
+        entry.setShiftType(type);
+        days.saveAndFlush(entry);
+        AbsenceTypeDto timeOff = planner.types(owner).stream()
+                .filter(item -> "TIME_OFF".equals(item.systemCode()))
+                .findFirst().orElseThrow();
+        int before = overtime.balanceMinutes(owner);
+
+        ApiException error = assertThrows(ApiException.class, () ->
+                planner.createPeriod(owner, new AbsencePeriodCreateRequest(
+                        timeOff.id(), "Неизвестное положение перерыва",
+                        date.toString(), date.toString(), "APPROVED", null,
+                        "PARTIAL", "09:00", "11:00", "OVERTIME_BANK")));
+
+        assertTrue(error.getMessage().contains("точные интервалы перерывов"));
+        assertEquals(before, overtime.balanceMinutes(owner));
+        assertTrue(planner.occurrences(owner, date, date).isEmpty());
+        assertEquals(type.getId(), days.findByOwnerAndDate(owner, date)
+                .orElseThrow().getShiftType().getId());
     }
 }

@@ -107,4 +107,43 @@ class IndividualScheduleAbsenceTest {
             }
         }
     }
+
+    @Test
+    void partialAbsenceOutsideShiftDoesNotConsumeScheduledTime() {
+        AppUser owner = users.save(new AppUser(
+                "partial" + UUID.randomUUID().toString().replace("-", ""),
+                "{noop}unused"));
+        owner.setWorkTimezone("Asia/Yekaterinburg");
+        owner.setDisplayTimezone("Asia/Yekaterinburg");
+        users.saveAndFlush(owner);
+
+        LocalDate date = LocalDate.parse("2026-09-14");
+        ShiftType shift = shifts.save(new ShiftType(
+                owner, "Индивидуальная", 6.0, "#123456", false,
+                LocalTime.of(10, 0), LocalTime.of(16, 0), 0, 6.0));
+        DayEntry entry = new DayEntry(owner, date);
+        entry.setShiftType(shift);
+        days.saveAndFlush(entry);
+
+        overtime.createCredit(owner, new OvertimeCreditCreateRequest(
+                date.minusDays(1).toString(), null, null, null,
+                null, null, 4.0, "Запас"));
+
+        var type = planner.types(owner).stream()
+                .filter(item -> "TIME_OFF".equals(item.systemCode()))
+                .findFirst().orElseThrow();
+
+        var absence = planner.createPeriod(owner, new AbsencePeriodCreateRequest(
+                type.id(), "До начала смены", date.toString(), date.toString(),
+                "APPROVED", null, "PARTIAL", "08:00", "09:00", "OVERTIME_BANK"));
+
+        var source = time.payrollSource(owner, date, date);
+        assertAll(
+                () -> assertEquals(360, source.plannedMinutes()),
+                () -> assertEquals(360, source.workedMinutes()),
+                () -> assertEquals(0, source.overtimeCompensatedMinutes()),
+                () -> assertEquals(0, absence.compensatedMinutes()),
+                () -> assertEquals(240, overtime.balanceMinutes(owner))
+        );
+    }
 }

@@ -47,6 +47,7 @@ public class VacationPlannerService {
     private final SecurityEventLogger securityEvents;
     private final OvertimeService overtimeService;
     private final LedgerIntegrityService ledgerIntegrityService;
+    private final ScheduledAbsenceMinutesService scheduledAbsences;
 
     public VacationPlannerService(VacationSettingsRepository settingsRepository,
                                   UserRepository userRepository,
@@ -57,7 +58,8 @@ public class VacationPlannerService {
                                   UserTimeService userTimeService,
                                   SecurityEventLogger securityEvents,
                                   OvertimeService overtimeService,
-                                  LedgerIntegrityService ledgerIntegrityService) {
+                                  LedgerIntegrityService ledgerIntegrityService,
+                                  ScheduledAbsenceMinutesService scheduledAbsences) {
         this.settingsRepository = settingsRepository;
         this.userRepository = userRepository;
         this.typeRepository = typeRepository;
@@ -68,6 +70,7 @@ public class VacationPlannerService {
         this.securityEvents = securityEvents;
         this.overtimeService = overtimeService;
         this.ledgerIntegrityService = ledgerIntegrityService;
+        this.scheduledAbsences = scheduledAbsences;
     }
 
     @Transactional
@@ -708,7 +711,7 @@ public class VacationPlannerService {
 
     private void syncLinkedOvertimeUsage(AppUser user, AbsencePeriod period) {
         String postingState = ledgerIntegrityService.usagePostingState(period.getStatus());
-        if (OVERTIME_BANK.equals(period.getCompensationPolicy()) && postingState != null) {
+        if (OVERTIME_BANK.equals(period.getCompensationPolicy()) && postingState != null && period.getCompensatedMinutes() > 0) {
             Long usageId = overtimeService.upsertLinkedAbsenceUsage(
                     user,
                     period.getId(),
@@ -727,7 +730,11 @@ public class VacationPlannerService {
                                         String compensationPolicy) {
         if (!OVERTIME_BANK.equals(compensationPolicy)) return 0;
         if (PARTIAL.equals(shape.coverage())) {
-            return Math.toIntExact(Duration.between(shape.startTime(), shape.endTime()).toMinutes());
+            LocalDate date = shape.range().from();
+            DayEntry day = dayRepository.findByOwnerAndDate(user, date).orElse(null);
+            ShiftPlan plan = shiftPlans(user, date, date).get(date);
+            return scheduledAbsences.partial(user, day, date,
+                    shape.startTime(), shape.endTime(), plan == null ? 0 : plan.minutes());
         }
         Map<LocalDate, ShiftPlan> plans = shiftPlans(user, shape.range().from(), shape.range().to());
         int total = 0;

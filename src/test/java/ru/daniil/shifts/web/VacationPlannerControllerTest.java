@@ -126,6 +126,7 @@ class VacationPlannerControllerTest {
 
     @Test
     void partialTimeOffLifecycleUsesCanonicalOvertimeBank() throws Exception {
+        prepareKnownPartialSchedule();
         overtimeService.createCredit(owner, new OvertimeCreditCreateRequest(
                 "2026-08-01", null, null, null, null, null, 8.0, "Заранее отработанное время"));
         mvc.perform(patch("/api/vacation-planner/settings")
@@ -238,5 +239,23 @@ class VacationPlannerControllerTest {
                                 """.formatted(typeId)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value("VACATION_LIMIT_EXCEEDED"));
+    }
+
+    @Autowired
+    ru.daniil.shifts.repo.ShiftTypeRepository overlapShiftRepository;
+    @Autowired
+    ru.daniil.shifts.repo.DayEntryRepository overlapDayRepository;
+
+    private void prepareKnownPartialSchedule() {
+        var type = overlapShiftRepository.saveAndFlush(
+                new ru.daniil.shifts.model.ShiftType(
+                        owner, "Точная смена для отгула", 8.0, "#123456", false,
+                        java.time.LocalTime.of(9, 0),
+                        java.time.LocalTime.of(17, 0), 0, 8.0));
+        var date = java.time.LocalDate.parse("2026-08-06");
+        var day = overlapDayRepository.findByOwnerAndDate(owner, date)
+                .orElseGet(() -> new ru.daniil.shifts.model.DayEntry(owner, date));
+        day.setShiftType(type);
+        overlapDayRepository.saveAndFlush(day);
     }
 }

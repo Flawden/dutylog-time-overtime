@@ -45,6 +45,7 @@ class LedgerIntegrityApprovalWorkflowServiceTest {
 
     @Test
     void draftReservePostAndCancelKeepOneReversibleOvertimeSource() {
+        prepareKnownPartialSchedule();
         overtime.createCredit(owner, new OvertimeCreditCreateRequest(
                 "2026-08-01", null, null, null, null, null, 8.0, "Банк для workflow"));
 
@@ -150,5 +151,23 @@ class LedgerIntegrityApprovalWorkflowServiceTest {
     private AbsencePeriodUpdateRequest status(String value) {
         return new AbsencePeriodUpdateRequest(null, null, null, null, value, null,
                 null, null, null, null, null, null, null);
+    }
+
+    @Autowired
+    ru.daniil.shifts.repo.ShiftTypeRepository overlapShiftRepository;
+    @Autowired
+    ru.daniil.shifts.repo.DayEntryRepository overlapDayRepository;
+
+    private void prepareKnownPartialSchedule() {
+        var type = overlapShiftRepository.saveAndFlush(
+                new ru.daniil.shifts.model.ShiftType(
+                        owner, "Точная смена для отгула", 8.0, "#123456", false,
+                        java.time.LocalTime.of(9, 0),
+                        java.time.LocalTime.of(17, 0), 0, 8.0));
+        var date = java.time.LocalDate.parse("2026-08-06");
+        var day = overlapDayRepository.findByOwnerAndDate(owner, date)
+                .orElseGet(() -> new ru.daniil.shifts.model.DayEntry(owner, date));
+        day.setShiftType(type);
+        overlapDayRepository.saveAndFlush(day);
     }
 }

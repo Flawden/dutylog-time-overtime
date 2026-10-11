@@ -42,6 +42,7 @@ public class TimeCompensationService {
     private final TimeLedgerEntryRepository ledgerEntries;
     private final ProductionCalendarService productionCalendar;
     private final PayClassificationService payClassification;
+    private final ScheduledAbsenceMinutesService scheduledAbsences;
 
     public TimeCompensationService(DayEntryRepository days,
                                    ActualWorkIntervalRepository actualWork,
@@ -51,7 +52,8 @@ public class TimeCompensationService {
                                    LedgerIntegrityService ledgerIntegrity,
                                    TimeLedgerEntryRepository ledgerEntries,
                                    ProductionCalendarService productionCalendar,
-                                   PayClassificationService payClassification) {
+                                   PayClassificationService payClassification,
+                                   ScheduledAbsenceMinutesService scheduledAbsences) {
         this.days = days;
         this.actualWork = actualWork;
         this.actualAllocation = actualAllocation;
@@ -61,6 +63,7 @@ public class TimeCompensationService {
         this.ledgerEntries = ledgerEntries;
         this.productionCalendar = productionCalendar;
         this.payClassification = payClassification;
+        this.scheduledAbsences = scheduledAbsences;
     }
 
     @Transactional
@@ -114,7 +117,7 @@ public class TimeCompensationService {
             DayEntry day = planned.get(date);
             int plannedMinutes = productionCalendar.requiredMinutes(user, date, day, productionDays);
             List<AbsenceOccurrenceDto> dayAbsences = absences.getOrDefault(date, List.of());
-            int absenceMinutes = absenceMinutes(plannedMinutes, dayAbsences);
+            int absenceMinutes = absenceMinutes(user, day, plannedMinutes, dayAbsences);
             int earnedMinutes = earnedByDate.getOrDefault(date, 0);
             List<ActualWorkInterval> actualIntervals = actualByDate.getOrDefault(date, List.of());
             LocalDate currentDate = date;
@@ -125,8 +128,8 @@ public class TimeCompensationService {
             int usedMinutes = usedByDate.getOrDefault(date, 0);
             int compensatedMinutes = compensatedByDate.getOrDefault(date, 0);
             int dayVacationDays = (int) dayAbsences.stream().filter(AbsenceOccurrenceDto::countedDay).count();
-            int sickMinutes = policyMinutes(plannedMinutes, dayAbsences, "SICK_PAY");
-            int unpaidMinutes = policyMinutes(plannedMinutes, dayAbsences, "UNPAID");
+            int sickMinutes = policyMinutes(user, day, plannedMinutes, dayAbsences, "SICK_PAY");
+            int unpaidMinutes = policyMinutes(user, day, plannedMinutes, dayAbsences, "UNPAID");
 
             if (plannedMinutes > 0 || absenceMinutes > 0 || earnedMinutes > 0 || usedMinutes > 0 || explicitActual) {
                 rows.add(new TimeCompensationDayDto(
@@ -259,7 +262,7 @@ public class TimeCompensationService {
         for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
             int plannedMinutes = productionCalendar.requiredMinutes(user, date, planned.get(date), productionDays);
             List<AbsenceOccurrenceDto> absences = postedAbsences.getOrDefault(date, List.of());
-            int absenceMinutes = absenceMinutes(plannedMinutes, absences);
+            int absenceMinutes = absenceMinutes(user, planned.get(date), plannedMinutes, absences);
             int earnedMinutes = earnedByDate.getOrDefault(date, 0);
             List<ActualWorkInterval> actualIntervals = actualByDate.getOrDefault(date, List.of());
             LocalDate currentDate = date;
@@ -306,10 +309,10 @@ public class TimeCompensationService {
                         classified.regularMinutes();
             }
 
-            int vacationMinutes = policyMinutes(plannedMinutes, absences, "VACATION_ALLOWANCE");
-            int sickMinutes = policyMinutes(plannedMinutes, absences, "SICK_PAY");
-            int overtimeMinutes = policyMinutes(plannedMinutes, absences, "OVERTIME_BANK");
-            int unpaidMinutes = policyMinutes(plannedMinutes, absences, "UNPAID");
+            int vacationMinutes = policyMinutes(user, planned.get(date), plannedMinutes, absences, "VACATION_ALLOWANCE");
+            int sickMinutes = policyMinutes(user, planned.get(date), plannedMinutes, absences, "SICK_PAY");
+            int overtimeMinutes = policyMinutes(user, planned.get(date), plannedMinutes, absences, "OVERTIME_BANK");
+            int unpaidMinutes = policyMinutes(user, planned.get(date), plannedMinutes, absences, "UNPAID");
             int classified = vacationMinutes + sickMinutes + overtimeMinutes + unpaidMinutes;
             int otherUnpaidMinutes = Math.max(0, absenceMinutes - classified);
 
@@ -503,29 +506,32 @@ public class TimeCompensationService {
         }
     }
 
-    private int absenceMinutes(int plannedMinutes, List<AbsenceOccurrenceDto> absences) {
+    private int absenceMinutes(AppUser user, DayEntry day, int plannedMinutes, List<AbsenceOccurrenceDto> absences) {
         if (absences.stream().anyMatch(item -> "FULL_DAY".equals(item.coverage()) && item.replacesShift())) {
             return plannedMinutes;
         }
         int partial = absences.stream()
                 .filter(item -> "PARTIAL".equals(item.coverage()))
-                .mapToInt(this::partialMinutes)
+                .mapToInt(item -> partialMinutes(user, day, plannedMinutes, item))
                 .sum();
         return plannedMinutes > 0 ? Math.min(plannedMinutes, partial) : partial;
     }
 
-    private int policyMinutes(int plannedMinutes, List<AbsenceOccurrenceDto> absences, String policy) {
+    private int policyMinutes(AppUser user, DayEntry day, int plannedMinutes, List<AbsenceOccurrenceDto> absences, String policy) {
         int total = 0;
         for (AbsenceOccurrenceDto item : absences) {
             if (!policy.equals(item.compensationPolicy())) continue;
-            total += "PARTIAL".equals(item.coverage()) ? partialMinutes(item) : plannedMinutes;
+            total += "PARTIAL".equals(item.coverage()) ? partialMinutes(user, day, plannedMinutes, item) : plannedMinutes;
         }
         return total;
     }
 
-    private int partialMinutes(AbsenceOccurrenceDto item) {
-        if (item.startTime() == null || item.endTime() == null) return 0;
-        return Math.toIntExact(Duration.between(LocalTime.parse(item.startTime()), LocalTime.parse(item.endTime())).toMinutes());
+    private int partialMinutes(AppUser user, DayEntry day, int plannedMinutes,
+                               AbsenceOccurrenceDto item) {
+        return scheduledAbsences.partial(user, day, LocalDate.parse(item.date()),
+                item.startTime() == null ? null : LocalTime.parse(item.startTime()),
+                item.endTime() == null ? null : LocalTime.parse(item.endTime()),
+                plannedMinutes);
     }
 
     private String minutesLabel(int minutes) {
