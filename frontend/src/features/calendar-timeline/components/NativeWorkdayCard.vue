@@ -340,12 +340,12 @@ onMounted(() => void load());
     <div class="nativeWorkdayConsequences"><small>DutyLog уже учёл</small><b>{{ consequenceLabel }}</b></div>
 
     <div class="nativeWorkdayActions">
-      <button type="button" @click="emit('openSection', 'shift')">Изменить смену</button>
-      <button v-if="overtimeEnabled" type="button" @click="openActual(truth?.actualWork?.[0] ?? null)">{{ truth?.explicitActual ? 'Изменить факт' : 'Фактическая работа' }}</button>
-      <button v-if="overtimeEnabled && truth?.explicitActual" type="button" class="dangerSoft" @click="quickDeleteActual">Удалить факт</button>
-      <button type="button" @click="openAbsence">Отсутствовать</button>
-      <button type="button" :class="{ active: editor === 'special' }" @click="editor = editor === 'special' ? null : 'special'">Особый день</button>
-      <button v-if="truth?.productionCalendar.localOverride" type="button" class="dangerSoft" @click="quickResetSpecialDay">Сбросить особый день</button>
+      <button class="ui-button ui-button--secondary ui-button--md" type="button" @click="emit('openSection', 'shift')">Изменить смену</button>
+      <button class="ui-button ui-button--secondary ui-button--md" v-if="overtimeEnabled" type="button" @click="openActual(truth?.actualWork?.[0] ?? null)">{{ truth?.explicitActual ? 'Изменить факт' : 'Фактическая работа' }}</button>
+      <button v-if="overtimeEnabled && truth?.explicitActual" type="button" class="ui-button ui-button--danger ui-button--md dangerSoft" @click="quickDeleteActual">Удалить факт</button>
+      <button class="ui-button ui-button--secondary ui-button--md" type="button" @click="openAbsence">Отсутствовать</button>
+      <button class="ui-button ui-button--secondary ui-button--md" type="button" :class="{ active: editor === 'special' }" @click="editor = editor === 'special' ? null : 'special'">Особый день</button>
+      <button v-if="truth?.productionCalendar.localOverride" type="button" class="ui-button ui-button--danger ui-button--md dangerSoft" @click="quickResetSpecialDay">Сбросить особый день</button>
     </div>
 
     <form v-if="editor === 'special'" class="nativeWorkdayEditor" data-native-special-day-editor @submit.prevent="saveSpecialDay">
@@ -370,9 +370,9 @@ onMounted(() => void load());
         <input v-model="productionLabel" maxlength="120" placeholder="Например: предпраздничный день"/>
       </label>
       <div class="nativeEditorActions">
-        <button class="primary" type="submit" :disabled="loading">Сохранить</button>
-        <button v-if="truth?.productionCalendar.localOverride" type="button" :disabled="loading" @click="deleteSpecialDay">Сбросить правило</button>
-        <button type="button" @click="editor = null">Закрыть</button>
+        <button class="ui-button ui-button--primary ui-button--md primary" type="submit" :disabled="loading">Сохранить</button>
+        <button class="ui-button ui-button--secondary ui-button--md" v-if="truth?.productionCalendar.localOverride" type="button" :disabled="loading" @click="deleteSpecialDay">Сбросить правило</button>
+        <button class="ui-button ui-button--secondary ui-button--md" type="button" @click="editor = null">Закрыть</button>
       </div>
       <p>Особый день меняет обязательную норму и/или категорию оплаты. Он не создаёт отгул и не двигает часы банка сам по себе.</p>
     </form>
@@ -394,9 +394,9 @@ onMounted(() => void load());
         <div class="nativeActualPreview wide" v-if="actualPreview">По часам {{ formatMinutes(actualPreview.elapsed) }} · перерыв {{ formatMinutes(actualPreview.breakMinutes) }} · <b>фактически {{ formatMinutes(Math.max(0, actualPreview.net)) }}</b><span v-if="actualPreview.endDate !== (actualWorkDate || date)">до {{ actualPreview.endDate }}</span><span v-if="!actualEndsAnotherDay && actualPreview.endDate !== (actualWorkDate || date)">Конец раньше начала — DutyLog считает окончанием следующего дня.</span><span v-if="actualId == null && truth?.scheduledBreakMinutes">Перерыв подставлен из смены автоматически.</span></div>
         <label class="wide">Причина / комментарий<input v-model="actualNote" maxlength="500" placeholder="Например: задержался по работе"/></label>
         <div class="nativeEditorActions wide">
-          <button class="primary" type="submit" :disabled="loading">{{ actualId == null ? 'Записать факт' : 'Сохранить факт' }}</button>
-          <button v-if="actualId != null" type="button" :disabled="loading" @click="deleteSelectedActual">Удалить факт</button>
-          <button type="button" @click="editor = null">Закрыть</button>
+          <button class="ui-button ui-button--primary ui-button--md primary" type="submit" :disabled="loading">{{ actualId == null ? 'Записать факт' : 'Сохранить факт' }}</button>
+          <button class="ui-button ui-button--secondary ui-button--md" v-if="actualId != null" type="button" :disabled="loading" @click="deleteSelectedActual">Удалить факт</button>
+          <button class="ui-button ui-button--secondary ui-button--md" type="button" @click="editor = null">Закрыть</button>
         </div>
       </form>
       <p>Факт — источник истины. DutyLog вычитает неоплачиваемый перерыв и автоматически согласует обычную переработку с банком времени. Праздничная работа остаётся отдельной категорией оплаты.</p>
