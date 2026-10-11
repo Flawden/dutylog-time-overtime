@@ -40,7 +40,7 @@ public class WorkdayTruthService {
         this.actualWork = actualWork;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public WorkdayTruthDto truth(AppUser user, LocalDate date) {
         DayEntry day = days.findByOwnerAndDate(user, date).orElse(null);
         ShiftType shift = day == null ? null : day.getShiftType();
