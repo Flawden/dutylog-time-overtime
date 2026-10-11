@@ -11,6 +11,8 @@ import type {
 
 export function createPayrollApi(client: DutyLogGeneratedApiClient = createGeneratedDutyLogApiClient()) {
   return Object.freeze({
+    holidayReview(month: string) { return client.request("getHolidayReview", { path: { month } }); },
+    saveHolidayReview(month: string, body: import("@/generated/dutylog-api").DutyLogApiSchemas.HolidayReviewSubmission) { return client.request("saveHolidayReview", { path: { month }, body }); },
     period(month: string) { return client.request("payrollPeriod", { path: { month } }); },
     pricingTerms() { return client.request("listPayrollPricingTerms"); },
     async upsertPricingTerm(effectiveFrom: string, body: PayPricingTermInput): Promise<void> {

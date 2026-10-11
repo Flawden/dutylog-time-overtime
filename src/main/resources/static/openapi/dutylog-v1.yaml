@@ -10,6 +10,35 @@ servers:
 security:
   - bearerAuth: []
 paths:
+  /api/v1/payroll/periods/{month}/holiday-review:
+    parameters:
+      - name: month
+        in: path
+        required: true
+        schema: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' }
+    get:
+      operationId: getHolidayReview
+      responses:
+        '200':
+          description: Current owner monthly source review workspace
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HolidayReviewWorkspace' }
+    put:
+      operationId: saveHolidayReview
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/HolidayReviewSubmission' }
+      responses:
+        '200':
+          description: Sources saved atomically; historical payroll revisions remain unchanged
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HolidayReviewWorkspace' }
+        '400': { description: Invalid or incomplete source input }
+        '409': { description: Changed configuration or immutable authority conflict }
   /api/v1/mobile/auth/registration-status:
     get:
       security: []
@@ -4336,3 +4365,93 @@ components:
         items:
           type: array
           items: { $ref: '#/components/schemas/MobileSyncItemResult' }
+    HolidayReviewSource:
+      type: object
+      additionalProperties: false
+      required: [kind, reference, revision, basis]
+      properties:
+        kind: { type: string, enum: [COLLECTIVE_AGREEMENT, LOCAL_NORMATIVE_ACT, EMPLOYMENT_CONTRACT] }
+        reference: { type: string, maxLength: 500 }
+        revision: { type: string, maxLength: 160 }
+        basis: { type: string, maxLength: 2000 }
+    HolidayReviewRule:
+      type: object
+      additionalProperties: false
+      required: [versionId, componentFingerprint, currencyCode, period, periodAmountMinor, periodMinutes, enhancedAdditionalBps, restDayAdditionalBps, source]
+      properties:
+        versionId: { type: integer, format: int64 }
+        componentFingerprint: { type: string }
+        currencyCode: { type: string }
+        period: { type: string, enum: [HOUR, PAYROLL_MONTH] }
+        periodAmountMinor: { type: integer, format: int64, minimum: 1, maximum: 1000000000000 }
+        periodMinutes: { type: integer, minimum: 1, maximum: 46080 }
+        enhancedAdditionalBps: { type: integer, minimum: 0, maximum: 10000000 }
+        restDayAdditionalBps: { type: integer, minimum: 0, maximum: 10000000 }
+        source: { $ref: '#/components/schemas/HolidayReviewSource' }
+    HolidayReview:
+      type: object
+      additionalProperties: false
+      required: [currencyCode, completeSystemSource, localRestDaySource, localRestDayRule, rules]
+      properties:
+        currencyCode: { type: string }
+        completeSystemSource: { $ref: '#/components/schemas/HolidayReviewSource' }
+        localRestDaySource: { $ref: '#/components/schemas/HolidayReviewSource' }
+        localRestDayRule: { type: string, enum: [NOT_APPLICABLE, APPLIES] }
+        rules:
+          type: array
+          items: { $ref: '#/components/schemas/HolidayReviewRule' }
+    HolidayReviewComponentInput:
+      type: object
+      additionalProperties: false
+      required: [versionId, fingerprint, decision, source]
+      properties:
+        versionId: { type: integer, format: int64 }
+        fingerprint: { type: string }
+        decision: { type: string, enum: [INCLUDE, EXCLUDE, UNCLASSIFIED], nullable: true }
+        source: { $ref: '#/components/schemas/HolidayReviewSource', nullable: true }
+    HolidayReviewComponent:
+      allOf:
+        - $ref: '#/components/schemas/HolidayReviewComponentInput'
+        - type: object
+          required: [name, currencyCode, locked]
+          properties:
+            name: { type: string }
+            currencyCode: { type: string }
+            locked: { type: boolean }
+    HolidayReviewWorkspace:
+      type: object
+      required: [month, configurationToken, currencyCode, revision, pricingEffectiveFrom, localSourceRequired, localSource, components, savedReview, ready, blockingReason]
+      properties:
+        month: { type: string }
+        configurationToken: { type: string }
+        currencyCode: { type: string, nullable: true }
+        revision: { type: integer }
+        pricingEffectiveFrom: { type: string, format: date, nullable: true }
+        localSourceRequired: { type: boolean }
+        localSource: { $ref: '#/components/schemas/HolidayReviewLocalSource', nullable: true }
+        components:
+          type: array
+          items: { $ref: '#/components/schemas/HolidayReviewComponent' }
+        savedReview: { $ref: '#/components/schemas/HolidayReview', nullable: true }
+        ready: { type: boolean }
+        blockingReason: { type: string, nullable: true }
+    HolidayReviewSubmission:
+      type: object
+      additionalProperties: false
+      required: [configurationToken, expectedRevision, localSource, components, review]
+      properties:
+        configurationToken: { type: string }
+        expectedRevision: { type: integer, minimum: 0 }
+        localSource: { $ref: '#/components/schemas/HolidayReviewLocalSource', nullable: true }
+        components:
+          type: array
+          items: { $ref: '#/components/schemas/HolidayReviewComponentInput' }
+        review: { $ref: '#/components/schemas/HolidayReview' }
+    HolidayReviewLocalSource:
+      type: object
+      additionalProperties: false
+      required: [kind, reference, revision]
+      properties:
+        kind: { type: string, enum: [COLLECTIVE_AGREEMENT, LOCAL_NORMATIVE_ACT, EMPLOYMENT_CONTRACT] }
+        reference: { type: string, maxLength: 500 }
+        revision: { type: string, maxLength: 160 }

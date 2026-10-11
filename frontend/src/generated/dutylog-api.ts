@@ -2,12 +2,12 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  * Source: src/main/resources/static/openapi/dutylog-v1.yaml
- * SHA-256: 86548a5e70bf5826d253b555a163a5340ad76d06bce793cb6200b79eab620593
+ * SHA-256: 49004909ed0ca451ae1d7719c8a58a3d9b076c07743a76e8407887b2c68c9618
  * Generator: frontend/scripts/generate-openapi-contract.mjs
- * Contract: 146 operations, 157 schemas
+ * Contract: 148 operations, 165 schemas
  */
 
-export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "86548a5e70bf5826d253b555a163a5340ad76d06bce793cb6200b79eab620593";
+export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "49004909ed0ca451ae1d7719c8a58a3d9b076c07743a76e8407887b2c68c9618";
 
 export namespace DutyLogApiSchemas {
   export type AbsenceOccurrence = {
@@ -444,6 +444,74 @@ export namespace DutyLogApiSchemas {
     title?: string | null;
     content?: string | null;
     pinned?: boolean;
+  };
+
+  export type HolidayReview = {
+    currencyCode: string;
+    completeSystemSource: DutyLogApiSchemas.HolidayReviewSource;
+    localRestDaySource: DutyLogApiSchemas.HolidayReviewSource;
+    localRestDayRule: "NOT_APPLICABLE" | "APPLIES";
+    rules: Array<DutyLogApiSchemas.HolidayReviewRule>;
+  };
+
+  export type HolidayReviewComponent = DutyLogApiSchemas.HolidayReviewComponentInput & {
+    name: string;
+    currencyCode: string;
+    locked: boolean;
+  };
+
+  export type HolidayReviewComponentInput = {
+    versionId: number;
+    fingerprint: string;
+    decision: "INCLUDE" | "EXCLUDE" | "UNCLASSIFIED" | null;
+    source: DutyLogApiSchemas.HolidayReviewSource | null;
+  };
+
+  export type HolidayReviewLocalSource = {
+    kind: "COLLECTIVE_AGREEMENT" | "LOCAL_NORMATIVE_ACT" | "EMPLOYMENT_CONTRACT";
+    reference: string;
+    revision: string;
+  };
+
+  export type HolidayReviewRule = {
+    versionId: number;
+    componentFingerprint: string;
+    currencyCode: string;
+    period: "HOUR" | "PAYROLL_MONTH";
+    periodAmountMinor: number;
+    periodMinutes: number;
+    enhancedAdditionalBps: number;
+    restDayAdditionalBps: number;
+    source: DutyLogApiSchemas.HolidayReviewSource;
+  };
+
+  export type HolidayReviewSource = {
+    kind: "COLLECTIVE_AGREEMENT" | "LOCAL_NORMATIVE_ACT" | "EMPLOYMENT_CONTRACT";
+    reference: string;
+    revision: string;
+    basis: string;
+  };
+
+  export type HolidayReviewSubmission = {
+    configurationToken: string;
+    expectedRevision: number;
+    localSource: DutyLogApiSchemas.HolidayReviewLocalSource | null;
+    components: Array<DutyLogApiSchemas.HolidayReviewComponentInput>;
+    review: DutyLogApiSchemas.HolidayReview;
+  };
+
+  export type HolidayReviewWorkspace = {
+    month: string;
+    configurationToken: string;
+    currencyCode: string | null;
+    revision: number;
+    pricingEffectiveFrom: string | null;
+    localSourceRequired: boolean;
+    localSource: DutyLogApiSchemas.HolidayReviewLocalSource | null;
+    components: Array<DutyLogApiSchemas.HolidayReviewComponent>;
+    savedReview: DutyLogApiSchemas.HolidayReview | null;
+    ready: boolean;
+    blockingReason: string | null;
   };
 
   export type ImportantEvent = DutyLogApiSchemas.ImportantEventInput & {
@@ -1802,6 +1870,7 @@ export const dutyLogOperations = {
   "exportNotes": { method: "GET", path: "/api/v1/export/notes" },
   "getAdminRegistrationSettings": { method: "GET", path: "/api/v1/admin/settings/registration" },
   "getCalendarSyncStatus": { method: "GET", path: "/api/v1/calendar-sync/status" },
+  "getHolidayReview": { method: "GET", path: "/api/v1/payroll/periods/{month}/holiday-review" },
   "getNotificationSettings": { method: "GET", path: "/api/v1/notifications/settings" },
   "getProfile": { method: "GET", path: "/api/v1/profile" },
   "getTaskDetails": { method: "GET", path: "/api/v1/tasks/{taskId}" },
@@ -1865,6 +1934,7 @@ export const dutyLogOperations = {
   "revokeMobileSession": { method: "DELETE", path: "/api/v1/mobile/auth/sessions/{id}" },
   "revokeProfileSession": { method: "DELETE", path: "/api/v1/profile/sessions/{id}" },
   "rotateCalendarSubscription": { method: "POST", path: "/api/v1/calendar-sync/subscription" },
+  "saveHolidayReview": { method: "PUT", path: "/api/v1/payroll/periods/{month}/holiday-review" },
   "searchDayNotes": { method: "GET", path: "/api/v1/notes/search" },
   "syncMobileQueue": { method: "POST", path: "/api/v1/mobile/sync" },
   "taskBoard": { method: "GET", path: "/api/v1/tasks/board" },
@@ -2093,6 +2163,10 @@ export interface DutyLogOperationTypes {
   "getCalendarSyncStatus": {
     requestBody: undefined;
     response: DutyLogApiSchemas.CalendarSyncStatus;
+  };
+  "getHolidayReview": {
+    requestBody: undefined;
+    response: DutyLogApiSchemas.HolidayReviewWorkspace;
   };
   "getNotificationSettings": {
     requestBody: undefined;
@@ -2349,6 +2423,10 @@ export interface DutyLogOperationTypes {
   "rotateCalendarSubscription": {
     requestBody: undefined;
     response: DutyLogApiSchemas.CalendarSubscription;
+  };
+  "saveHolidayReview": {
+    requestBody: DutyLogApiSchemas.HolidayReviewSubmission;
+    response: DutyLogApiSchemas.HolidayReviewWorkspace;
   };
   "searchDayNotes": {
     requestBody: undefined;

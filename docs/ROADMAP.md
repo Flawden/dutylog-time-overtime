@@ -20,7 +20,8 @@ This section records the verified current branch state. Release-specific invento
 - [x] Documented domain/API scenario covers reviewed, blocked and legacy states, rest-day election, components, bonus/regional bases, stale review, immutable history, ownership and corrupted frozen documents. See `docs/payroll-trust/P1B3_FULL_SCENARIO.md` and `P1B3C4C_PAYROLL_INTEGRATION.md`.
 - [x] Documented Payroll preview recovery returns a readable blocked preview for expected incomplete pricing configuration while preserving strict write rollback. See `docs/payroll-trust/PAYROLL_PREVIEW_TRANSACTION_RECOVERY.md`.
 - [x] Reconcile startup optimization documentation: defer Time Bank loading until its workspace, parallelize independent startup reads and cache immutable Vue chunks. See `docs/STARTUP_PERFORMANCE.md`.
-- [ ] Add the user-facing review/certification input flow; existing reviewed-month integration does not provide that form.
+- [x] Validate the monthly holiday-pay source-review form and authenticated atomic API: canonical frontend build, 99 unit tests, Maven clean verify (2921 tests), both browser scenarios in one run and local visual inspection passed by 2026-10-11. See `docs/payroll-trust/ARTICLE153_SOURCE_REVIEW_WORKSPACE.md`.
+- [ ] Add event-specific employee rest-day election input as a separate follow-up.
 - [ ] Verify article 153 clean PostgreSQL V90 and exact-commit staging acceptance from runner RESULT evidence.
 - [x] Reconcile `d7911a20` with `docs/OPTIMIZATION_FIXES_2026-10-07.md` and regression sources: userId-scoped offline storage, owner validation, retained account queues, empty-sync fast path and reduced redundant startup work.
 - [x] Optimization documentation reports 6 passing Node regressions and 94 Vitest tests; the two optimization browser scenarios belong to the subsequently passed 61-scenario local Playwright suite.

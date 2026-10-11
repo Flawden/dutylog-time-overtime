@@ -11,6 +11,7 @@ import type {
 import { navigateHashRoute } from "@/platform/router/hashRoute";
 import Article153PaymentDetails from "./Article153PaymentDetails.vue";
 import { ordinaryPremiumMessage } from "../presentation/ordinaryPremiumMessage";
+import HolidayReviewCard from "./HolidayReviewCard.vue";
 import PricingSettingsCard from "./PricingSettingsCard.vue";
 import CompensationComponentsCard from "./CompensationComponentsCard.vue";
 
@@ -132,6 +133,7 @@ onBeforeUnmount(()=>{if(previousDomain)window.DutyLogVueDomains=Object.freeze({.
 />
 
 <PricingSettingsCard :language="language" />
+<HolidayReviewCard :month="month" :language="language" @saved="refresh" />
 
 <section class="card productionCalendarCard" data-production-calendar-foundation><div class="payrollSectionHead"><div><div class="eyebrow">Production Calendar</div><h3>{{ text.production }}</h3></div><button type="button" @click="openCalendar">{{ text.openCalendar }}</button></div><div class="productionNormMetrics"><div><span>{{ text.base }}</span><b id="productionBaseNorm">{{ minutes(productionCalendar?.baseNormMinutes) }}</b></div><div><span>{{ text.adjustment }}</span><b id="productionNormAdjustment">{{ minutes(productionCalendar?.adjustmentMinutes) }}</b></div><div class="accent"><span>{{ text.production }}</span><b id="productionNorm">{{ minutes(productionCalendar?.productionNormMinutes) }}</b></div></div><p v-if="productionCalendar&&!productionCalendar.scheduleCoverageComplete" id="productionCoverageWarning" class="productionCoverageWarning">{{ text.coverageWarn }}</p><div class="productionCalendarRules" data-production-calendar-summary-only><article v-for="day in productionAffectedDays" :key="day.date" class="productionCalendarRule productionCalendarRule--summary"><span><b>{{ day.date }}</b><small>{{ day.label || day.dayKind }}</small></span><strong>{{ minutes(day.baseNormMinutes) }} → {{ minutes(day.productionNormMinutes) }}</strong></article><div v-if="!productionAffectedDays.length" class="payrollEmpty">{{ text.noRules }}</div></div></section>
 
