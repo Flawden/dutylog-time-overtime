@@ -733,7 +733,7 @@ public class VacationPlannerService {
         int total = 0;
         for (LocalDate date = shape.range().from(); !date.isAfter(shape.range().to()); date = date.plusDays(1)) {
             ShiftPlan plan = plans.get(date);
-            total += plan != null && plan.minutes() > 0 ? plan.minutes() : settings.getDefaultTimeOffDayMinutes();
+            total += plan != null ? plan.minutes() : settings.getDefaultTimeOffDayMinutes();
         }
         return total;
     }
