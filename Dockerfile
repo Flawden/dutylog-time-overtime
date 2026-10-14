@@ -1,5 +1,5 @@
 # Multi-stage build: compile with Maven, then run from a small non-root JRE image.
-FROM maven:3.9.9-eclipse-temurin-17 AS build
+FROM maven:3.9-eclipse-temurin-26 AS build
 WORKDIR /app
 
 ARG DUTYLOG_BUILD_ID=local
