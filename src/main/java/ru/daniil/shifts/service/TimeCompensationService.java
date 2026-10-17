@@ -3,6 +3,8 @@ package ru.daniil.shifts.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.dto.Dtos.AbsenceOccurrenceDto;
+import ru.daniil.shifts.dto.Dtos.TimeCompensationCalculationIssueDto;
+import ru.daniil.shifts.service.exception.ApiException;
 import ru.daniil.shifts.dto.Dtos.OvertimeAccountDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeCreditRowDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeUsageDto;
@@ -103,6 +105,7 @@ public class TimeCompensationService {
         }
 
         List<TimeCompensationDayDto> rows = new ArrayList<>();
+        List<TimeCompensationCalculationIssueDto> calculationIssues = new ArrayList<>();
         int plannedTotal = 0;
         int workedTotal = 0;
         int absenceTotal = 0;
@@ -117,7 +120,23 @@ public class TimeCompensationService {
             DayEntry day = planned.get(date);
             int plannedMinutes = productionCalendar.requiredMinutes(user, date, day, productionDays);
             List<AbsenceOccurrenceDto> dayAbsences = absences.getOrDefault(date, List.of());
-            int absenceMinutes = absenceMinutes(user, day, plannedMinutes, dayAbsences);
+            int absenceMinutes = 0;
+            int sickMinutes = 0;
+            int unpaidMinutes = 0;
+            boolean calculationComplete = true;
+            try {
+                absenceMinutes = absenceMinutes(user, day, plannedMinutes, dayAbsences);
+                sickMinutes = policyMinutes(user, day, plannedMinutes, dayAbsences, "SICK_PAY");
+                unpaidMinutes = policyMinutes(user, day, plannedMinutes, dayAbsences, "UNPAID");
+            } catch (ApiException error) {
+                // Only missing floating-break information is recoverable in this read model.
+                // Payroll and mutations keep using the strict calculation below.
+                if (!"ABSENCE_BREAK_OVERLAP_REQUIRED".equals(error.getCode())) throw error;
+                calculationComplete = false;
+                calculationIssues.add(new TimeCompensationCalculationIssueDto(
+                        date.toString(), dayAbsences.stream().map(AbsenceOccurrenceDto::periodId).distinct().toList(),
+                        error.getCode(), error.getMessage()));
+            }
             int earnedMinutes = earnedByDate.getOrDefault(date, 0);
             List<ActualWorkInterval> actualIntervals = actualByDate.getOrDefault(date, List.of());
             LocalDate currentDate = date;
@@ -128,22 +147,20 @@ public class TimeCompensationService {
             int usedMinutes = usedByDate.getOrDefault(date, 0);
             int compensatedMinutes = compensatedByDate.getOrDefault(date, 0);
             int dayVacationDays = (int) dayAbsences.stream().filter(AbsenceOccurrenceDto::countedDay).count();
-            int sickMinutes = policyMinutes(user, day, plannedMinutes, dayAbsences, "SICK_PAY");
-            int unpaidMinutes = policyMinutes(user, day, plannedMinutes, dayAbsences, "UNPAID");
 
             if (plannedMinutes > 0 || absenceMinutes > 0 || earnedMinutes > 0 || usedMinutes > 0 || explicitActual) {
                 rows.add(new TimeCompensationDayDto(
                         date.toString(),
                         plannedMinutes,
-                        workedMinutes,
-                        absenceMinutes,
+                        calculationComplete || explicitActual ? workedMinutes : null,
+                        calculationComplete ? absenceMinutes : null,
                         earnedMinutes,
                         usedMinutes,
                         compensatedMinutes,
                         dayVacationDays,
-                        sickMinutes,
-                        unpaidMinutes,
-                        explicitActual ? "Фактически отмечено · " + minutesLabel(workedMinutes)
+                        calculationComplete ? sickMinutes : null,
+                        calculationComplete ? unpaidMinutes : null,
+                        !calculationComplete ? "Требуется уточнить перерыв отсутствия" : explicitActual ? "Фактически отмечено · " + minutesLabel(workedMinutes)
                                 : factLabel(dayAbsences, workedMinutes, plannedMinutes),
                         compensationLabel(dayAbsences),
                         dayAbsences.stream().map(AbsenceOccurrenceDto::periodId).distinct().toList(),
@@ -211,10 +228,15 @@ public class TimeCompensationService {
                 && integrity.periods().stream().allMatch(item -> "CLOSED".equals(item.status()));
 
         return new TimeCompensationSummaryDto(
-                from.toString(), to.toString(), plannedTotal, workedTotal, absenceTotal,
+                from.toString(), to.toString(), plannedTotal,
+                calculationIssues.isEmpty() ? workedTotal : null,
+                calculationIssues.isEmpty() ? absenceTotal : null,
                 earnedTotal, usedTotal, (int) Math.round(account.balanceHours() * 60.0),
-                compensatedTotal, vacationDays, sickTotal, unpaidTotal,
-                reservedMinutes, postedMinutes, integrity.healthy(), periodClosed, List.copyOf(rows)
+                compensatedTotal, vacationDays,
+                calculationIssues.isEmpty() ? sickTotal : null,
+                calculationIssues.isEmpty() ? unpaidTotal : null,
+                reservedMinutes, postedMinutes, integrity.healthy(), periodClosed, List.copyOf(rows),
+                List.copyOf(calculationIssues)
         );
     }
 

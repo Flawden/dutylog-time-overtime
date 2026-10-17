@@ -117,4 +117,34 @@ test('floating unpaid break overlap is explicit and deducted from partial time o
   expect(saved.unpaidBreakOverlapMinutes).toBe(30);
   const account = await page.evaluate(() => jfetch('/api/overtime/account'));
   expect(account.balanceHours).toBe(6.5);
+
+  // Exercise the recoverable read contract for a pre-V91 absence. The Java
+  // integration test covers a real persisted null; here verify the UI boundary.
+  const summaryRoute = '**/api/v1/time-compensation?*';
+  await page.route(summaryRoute, async route => {
+    const result = await route.fetch();
+    expect(result.ok()).toBeTruthy();
+    const summary = await result.json();
+    await route.fulfill({ response: result, json: {
+      ...summary, workedMinutes: null, absenceMinutes: null, sickMinutes: null, unpaidMinutes: null,
+      calculationIssues: [{ date, absenceIds: [saved.id], code: 'ABSENCE_BREAK_OVERLAP_REQUIRED', message: 'Уточните перерыв' }],
+    } });
+  });
+  await openView(page, 'overtime');
+  await page.locator('[data-time-bank-section="overview"]').getByRole('button', { name: 'Обновить', exact: true }).click();
+  await expect(page.locator('#timeCompensationIssues')).toContainText(date);
+  await expect(page.locator('#timeCompUnpaid')).toHaveText('Требует уточнения');
+  const refreshed = waitForApi(page, 'GET', '/api/v1/time-compensation');
+  await page.locator('[data-time-bank-section="overview"]').getByRole('button', { name: 'Обновить', exact: true }).click();
+  await refreshed;
+  await expect(page.locator('#timeCompensationIssues')).toBeVisible();
+  await page.locator('#timeCompensationIssues').getByRole('button', { name: `Уточнить отсутствие № ${saved.id}` }).click();
+  await expect(page.locator('#vacationUnpaidBreakOverlap')).toBeVisible();
+  await page.locator('#absenceComposerClose').click();
+  await page.unroute(summaryRoute);
+  await openView(page, 'overtime');
+  await page.locator('[data-time-bank-section="overview"]').getByRole('button', { name: 'Обновить', exact: true }).click();
+  await expect(page.locator('#timeCompensationIssues')).toHaveCount(0);
+  const afterRefresh = await page.evaluate(() => jfetch('/api/overtime/account'));
+  expect(afterRefresh.balanceHours).toBe(6.5);
 });

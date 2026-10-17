@@ -71,6 +71,8 @@ const periodLabel = computed(() => {
   return new Intl.DateTimeFormat("ru-RU", { month: "long", year: "numeric", timeZone: "UTC" })
     .format(new Date(`${range.value.from}T00:00:00Z`));
 });
+const projectionMinutes = (minutes: number | null | undefined) => minutes === null ? "Требует уточнения" : formatMinutes(minutes);
+const calculationIssues = computed(() => compensation.value?.calculationIssues ?? []);
 const integrityHealthy = computed(() => integrity.value?.healthy !== false);
 const integrityRangeLabel = computed(() => {
   if (!integrity.value?.from || !integrity.value?.to) return "Период не загружен";
@@ -341,15 +343,22 @@ watch([timeBankTab, focusAbsenceUsageId], async ([tab, id]) => {
         <div><p class="domain-eyebrow">Plan → fact → compensation</p><h2>Сводка периода</h2></div>
         <UiButton variant="ghost" :disabled="loading" @click="store.refresh()">Обновить</UiButton>
       </header>
+      <div v-if="calculationIssues.length" id="timeCompensationIssues" role="alert">
+        <p><b>Сводка требует уточнения перерывов.</b> Откройте указанные отсутствия и заполните неоплачиваемый перерыв внутри интервала. Ноль укажите только если пересечения нет. Сохранённые списания банка не изменены.</p>
+        <ul><li v-for="issue in calculationIssues" :key="issue.date">
+          {{ issue.date }} — {{ issue.message }}
+          <UiButton v-for="id in issue.absenceIds" :key="id" variant="ghost" @click="openAbsence(id)">Уточнить отсутствие № {{ id }}</UiButton>
+        </li></ul>
+      </div>
       <div id="timeCompensationCard" class="compensation-card">
         <div><small>План</small><strong>{{ formatMinutes(compensation?.plannedMinutes) }}</strong></div>
-        <div><small>Факт</small><strong>{{ formatMinutes(compensation?.workedMinutes) }}</strong></div>
+        <div><small>Факт</small><strong>{{ projectionMinutes(compensation?.workedMinutes) }}</strong></div>
         <div><small>Компенсировано</small><strong>{{ formatMinutes(compensation?.compensatedMinutes) }}</strong></div>
-        <div><small>Без оплаты</small><strong id="timeCompUnpaid">{{ formatMinutes(compensation?.unpaidMinutes) }}</strong></div>
+        <div><small>Без оплаты</small><strong id="timeCompUnpaid">{{ projectionMinutes(compensation?.unpaidMinutes) }}</strong></div>
       </div>
       <div id="timeCompDays" class="compensation-days">
         <p><b>Списано из банка переработок:</b> {{ formatMinutes(compensation?.overtimeUsedMinutes) }}</p>
-        <p><b>Неоплачиваемое время:</b> {{ formatMinutes(compensation?.unpaidMinutes) }}</p>
+        <p><b>Неоплачиваемое время:</b> {{ projectionMinutes(compensation?.unpaidMinutes) }}</p>
         <p><b>Проведено:</b> {{ formatMinutes(postedMinutes) }} · <b>Резерв:</b> {{ formatMinutes(reservedMinutes) }}</p>
       </div>
 

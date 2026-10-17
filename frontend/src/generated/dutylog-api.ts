@@ -2,12 +2,12 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  * Source: src/main/resources/static/openapi/dutylog-v1.yaml
- * SHA-256: 41260c626a49588e6535348bdb8c313b89e733690473ab6be6c8d51d470706f5
+ * SHA-256: 9b2ea9fc8926919143e103eef0aca8f429007dcdec7005a57279ec543b75285c
  * Generator: frontend/scripts/generate-openapi-contract.mjs
- * Contract: 148 operations, 165 schemas
+ * Contract: 148 operations, 166 schemas
  */
 
-export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "41260c626a49588e6535348bdb8c313b89e733690473ab6be6c8d51d470706f5";
+export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "9b2ea9fc8926919143e103eef0aca8f429007dcdec7005a57279ec543b75285c";
 
 export namespace DutyLogApiSchemas {
   export type AbsenceOccurrence = {
@@ -1665,17 +1665,24 @@ export namespace DutyLogApiSchemas {
     pendingCodeExpiresAt?: string | null;
   };
 
+  export type TimeCompensationCalculationIssue = {
+    date: string;
+    absenceIds: Array<number>;
+    code: string;
+    message: string;
+  };
+
   export type TimeCompensationDay = {
     date: string;
     plannedMinutes: number;
-    workedMinutes: number;
-    absenceMinutes: number;
+    workedMinutes: number | null;
+    absenceMinutes: number | null;
     overtimeEarnedMinutes: number;
     overtimeUsedMinutes: number;
     compensatedMinutes: number;
     vacationDays: number;
-    sickMinutes: number;
-    unpaidMinutes: number;
+    sickMinutes: number | null;
+    unpaidMinutes: number | null;
     factLabel: string;
     compensationLabel: string;
     absenceIds: Array<number>;
@@ -1687,20 +1694,21 @@ export namespace DutyLogApiSchemas {
     from: string;
     to: string;
     plannedMinutes: number;
-    workedMinutes: number;
-    absenceMinutes: number;
+    workedMinutes: number | null;
+    absenceMinutes: number | null;
     overtimeEarnedMinutes: number;
     overtimeUsedMinutes: number;
     overtimeBalanceMinutes: number;
     compensatedMinutes: number;
     vacationDays: number;
-    sickMinutes: number;
-    unpaidMinutes: number;
+    sickMinutes: number | null;
+    unpaidMinutes: number | null;
     overtimeReservedMinutes?: number;
     overtimePostedMinutes?: number;
     integrityHealthy?: boolean;
     periodClosed?: boolean;
     days: Array<DutyLogApiSchemas.TimeCompensationDay>;
+    calculationIssues?: Array<DutyLogApiSchemas.TimeCompensationCalculationIssue>;
   };
 
   export type TimeContext = {

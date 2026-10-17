@@ -2139,14 +2139,14 @@ components:
       properties:
         date: { type: string, format: date }
         plannedMinutes: { type: integer, minimum: 0 }
-        workedMinutes: { type: integer, minimum: 0 }
-        absenceMinutes: { type: integer, minimum: 0 }
+        workedMinutes: { type: integer, minimum: 0, nullable: true }
+        absenceMinutes: { type: integer, minimum: 0, nullable: true }
         overtimeEarnedMinutes: { type: integer, minimum: 0 }
         overtimeUsedMinutes: { type: integer, minimum: 0 }
         compensatedMinutes: { type: integer, minimum: 0 }
         vacationDays: { type: integer, minimum: 0 }
-        sickMinutes: { type: integer, minimum: 0 }
-        unpaidMinutes: { type: integer, minimum: 0 }
+        sickMinutes: { type: integer, minimum: 0, nullable: true }
+        unpaidMinutes: { type: integer, minimum: 0, nullable: true }
         factLabel: { type: string }
         compensationLabel: { type: string }
         absenceIds: { type: array, items: { type: integer, format: int64 } }
@@ -2159,20 +2159,32 @@ components:
         from: { type: string, format: date }
         to: { type: string, format: date }
         plannedMinutes: { type: integer, minimum: 0 }
-        workedMinutes: { type: integer, minimum: 0 }
-        absenceMinutes: { type: integer, minimum: 0 }
+        workedMinutes: { type: integer, minimum: 0, nullable: true }
+        absenceMinutes: { type: integer, minimum: 0, nullable: true }
         overtimeEarnedMinutes: { type: integer, minimum: 0 }
         overtimeUsedMinutes: { type: integer, minimum: 0 }
         overtimeBalanceMinutes: { type: integer }
         compensatedMinutes: { type: integer, minimum: 0 }
         vacationDays: { type: integer, minimum: 0 }
-        sickMinutes: { type: integer, minimum: 0 }
-        unpaidMinutes: { type: integer, minimum: 0 }
+        sickMinutes: { type: integer, minimum: 0, nullable: true }
+        unpaidMinutes: { type: integer, minimum: 0, nullable: true }
         overtimeReservedMinutes: { type: integer, minimum: 0 }
         overtimePostedMinutes: { type: integer, minimum: 0 }
         integrityHealthy: { type: boolean }
         periodClosed: { type: boolean }
         days: { type: array, items: { $ref: '#/components/schemas/TimeCompensationDay' } }
+        calculationIssues:
+          type: array
+          description: Nonempty when projected totals are incomplete; affected totals are null. Bank movements are unchanged.
+          items: { $ref: '#/components/schemas/TimeCompensationCalculationIssue' }
+    TimeCompensationCalculationIssue:
+      type: object
+      required: [date, absenceIds, code, message]
+      properties:
+        date: { type: string, format: date }
+        absenceIds: { type: array, items: { type: integer, format: int64 } }
+        code: { type: string }
+        message: { type: string }
     TimeLedgerEntry:
       type: object
       required: [id, entryKind, sourceKind, effectiveDate, signedMinutes, postingState, createdAt]

@@ -89,6 +89,7 @@ public class ScheduledAbsenceMinutesService {
         }
         if (shift.breakMinutes() > 0) {
             throw ApiException.badRequest(
+                    "ABSENCE_BREAK_OVERLAP_REQUIRED",
                     "Укажи неоплачиваемый перерыв внутри интервала отсутствия: 0, если он не пересекается с перерывом смены");
         }
         return Math.toIntExact(Math.min(plannedMinutes, gross));

@@ -2582,14 +2582,14 @@ public final class Dtos {
     public record TimeCompensationDayDto(
             String date,
             int plannedMinutes,
-            int workedMinutes,
-            int absenceMinutes,
+            Integer workedMinutes,
+            Integer absenceMinutes,
             int overtimeEarnedMinutes,
             int overtimeUsedMinutes,
             int compensatedMinutes,
             int vacationDays,
-            int sickMinutes,
-            int unpaidMinutes,
+            Integer sickMinutes,
+            Integer unpaidMinutes,
             String factLabel,
             String compensationLabel,
             List<Long> absenceIds,
@@ -2602,20 +2602,26 @@ public final class Dtos {
             String from,
             String to,
             int plannedMinutes,
-            int workedMinutes,
-            int absenceMinutes,
+            Integer workedMinutes,
+            Integer absenceMinutes,
             int overtimeEarnedMinutes,
             int overtimeUsedMinutes,
             int overtimeBalanceMinutes,
             int compensatedMinutes,
             int vacationDays,
-            int sickMinutes,
-            int unpaidMinutes,
+            Integer sickMinutes,
+            Integer unpaidMinutes,
             int overtimeReservedMinutes,
             int overtimePostedMinutes,
             boolean integrityHealthy,
             boolean periodClosed,
-            List<TimeCompensationDayDto> days
+            List<TimeCompensationDayDto> days,
+            List<TimeCompensationCalculationIssueDto> calculationIssues
+    ) {}
+
+    /** A day whose projected totals require explicit floating-break information. */
+    public record TimeCompensationCalculationIssueDto(
+            String date, List<Long> absenceIds, String code, String message
     ) {}
 
     /** Immutable audit entry for one time/compensation movement. */
