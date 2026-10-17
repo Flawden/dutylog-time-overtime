@@ -1,0 +1,39 @@
+{
+    "result":  "PASS",
+    "sourceCommit":  "282837850383bd9aac8c68faf7364cde3b611015",
+    "completedAtUtc":  "2026-10-17T16:23:20.3037670Z",
+    "database":  "isolated PostgreSQL 16",
+    "postgresImageId":  "sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685",
+    "flywayV90Confirmed":  true,
+    "payableTableConfirmed":  true,
+    "schemaMode":  "Flyway migrations + Hibernate validate; no create-drop",
+    "testAdaptation":  "Only test annotation datasource URLs changed in exported source copy; details in test-adaptations.json",
+    "tests":  33,
+    "failures":  0,
+    "errors":  0,
+    "skipped":  0,
+    "suites":  [
+                   {
+                       "name":  "Article153PayrollScenarioTest",
+                       "tests":  8,
+                       "failures":  0,
+                       "errors":  0,
+                       "skipped":  0
+                   },
+                   {
+                       "name":  "Article153PayrollIntegrationTest",
+                       "tests":  17,
+                       "failures":  0,
+                       "errors":  0,
+                       "skipped":  0
+                   },
+                   {
+                       "name":  "Article153ReviewWorkspaceServiceTest",
+                       "tests":  8,
+                       "failures":  0,
+                       "errors":  0,
+                       "skipped":  0
+                   }
+               ],
+    "scope":  "Real-domain/API scenario, integration persistence/history/rollback tests, source-review workspace tests. Does not establish production legal correctness or untested scenarios."
+}
