@@ -100,7 +100,14 @@ if [[ "${DUTYLOG_ENVIRONMENT:-}" == production ]]; then
   [[ "${DUTYLOG_BACKUP_BEFORE_DEPLOY:-}" == true ]] || fail "production requires DUTYLOG_BACKUP_BEFORE_DEPLOY=true"
   [[ "${DUTYLOG_REGISTRATION_DEFAULT_ENABLED:-false}" == false ]] || fail "production registration must start closed"
 else
-  [[ "${DUTYLOG_PROJECT_NAME:-}" == dutylog-staging ]] || fail "staging project name must be dutylog-staging"
+  case "${DUTYLOG_PROJECT_NAME:-}" in
+    dutylog-staging|dutylog-lab)
+      ok "valid staging project name"
+      ;;
+    *)
+      fail "staging project name must be dutylog-staging or dutylog-lab"
+      ;;
+  esac
 fi
 
 if (( ERRORS > 0 )); then

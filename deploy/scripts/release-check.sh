@@ -1387,7 +1387,7 @@ contains deploy/scripts/deploy-environment.sh 'Creating verified pre-deploy back
 contains deploy/scripts/deploy-environment.sh 'check-deploy-env.sh'
 contains deploy/scripts/check-deploy-env.sh 'production requires DUTYLOG_BACKUP_BEFORE_DEPLOY=true'
 contains deploy/scripts/check-deploy-env.sh 'production project name must be dutylog-production'
-contains deploy/scripts/check-deploy-env.sh 'staging project name must be dutylog-staging'
+contains deploy/scripts/check-deploy-env.sh 'staging project name must be dutylog-staging or dutylog-lab'
 contains deploy/scripts/bootstrap-cicd-host.sh 'currently publishes linux/amd64 images'
 contains deploy/scripts/bootstrap-cicd-host.sh 'This bootstrap does not install or start Caddy and does not modify nginx.'
 not_contains deploy/scripts/bootstrap-cicd-host.sh 'docker network create'
@@ -2258,6 +2258,15 @@ if DUTYLOG_ENV_FILE="$DEPLOY_ENV_TMP/staging.env" bash deploy/scripts/check-depl
   ok "staging host-nginx environment example passes strict preflight after secrets are replaced"
 else
   fail "staging host-nginx environment example failed strict preflight"
+fi
+sed 's/^DUTYLOG_PROJECT_NAME=dutylog-staging$/DUTYLOG_PROJECT_NAME=dutylog-lab/' \
+  "$DEPLOY_ENV_TMP/staging.env" > "$DEPLOY_ENV_TMP/lab.env"
+
+if DUTYLOG_ENV_FILE="$DEPLOY_ENV_TMP/lab.env" \
+  bash deploy/scripts/check-deploy-env.sh staging >/dev/null; then
+  ok "lab project passes staging deployment preflight"
+else
+  fail "lab project failed staging deployment preflight"
 fi
 sed 's/DUTYLOG_BIND_ADDRESS=127.0.0.1/DUTYLOG_BIND_ADDRESS=0.0.0.0/' \
   "$DEPLOY_ENV_TMP/staging.env" > "$DEPLOY_ENV_TMP/public-bind.env"
