@@ -12,23 +12,40 @@ function requireResponse<T>(value: T | null, operation: string): T {
 
 export const calendarTimelineApi = Object.freeze({
   async load(focusDate: string, preferWorkDate = false, signal?: AbortSignal): Promise<{ bundle: CalendarRangeBundle; workDate: string; focusDate: string }> {
-    let workDate = todayIso();
-    const contextController = new AbortController();
-    const cancelContext = () => contextController.abort();
-    if (signal?.aborted) cancelContext();
-    signal?.addEventListener("abort", cancelContext, { once:true });
-    // Today requires authoritative timezone/date; do not introduce an early fallback there.
-    const timeout = preferWorkDate ? null : setTimeout(cancelContext, 1500);
-    try {
-      const context = await client.request("getTimeContext", { signal:contextController.signal });
-      if (context?.workDate) workDate = validDate(context.workDate, workDate);
-    } catch (error) {
-      if (signal?.aborted || (error && typeof error === "object" && "status" in error && error.status === 401)) throw error;
-      // Calendar remains usable when the optional time-context read fails or times out.
-    } finally {
-      if (timeout !== null) clearTimeout(timeout);
-      signal?.removeEventListener("abort", cancelContext);
+    const readWorkDate = async (): Promise<string> => {
+      let workDate = todayIso();
+      const contextController = new AbortController();
+      const cancelContext = () => contextController.abort();
+      if (signal?.aborted) cancelContext();
+      signal?.addEventListener("abort", cancelContext, { once:true });
+      // Today requires authoritative timezone/date; do not introduce an early fallback there.
+      const timeout = preferWorkDate ? null : setTimeout(cancelContext, 1500);
+      try {
+        const context = await client.request("getTimeContext", { signal:contextController.signal });
+        if (context?.workDate) workDate = validDate(context.workDate, workDate);
+      } catch (error) {
+        if (signal?.aborted || (error && typeof error === "object" && "status" in error && error.status === 401)) throw error;
+        // Calendar remains usable when the optional time-context read fails or times out.
+      } finally {
+        if (timeout !== null) clearTimeout(timeout);
+        signal?.removeEventListener("abort", cancelContext);
+      }
+      return workDate;
+    };
+    // An explicit calendar date does not depend on the current work date.
+    // Start both reads together; Promise.all observes both rejection paths.
+    // Today and invalid/missing focus still resolve the authoritative date first.
+    const explicitFocus = !preferWorkDate && /^\d{4}-\d{2}-\d{2}$/.test(focusDate)
+      && validDate(focusDate, "") === focusDate;
+    if (explicitFocus) {
+      const range = calendarLoadRange(focusDate);
+      const [workDate, response] = await Promise.all([
+        readWorkDate(),
+        client.request("calendarRange", { query: range, ...(signal ? { signal } : {}) }),
+      ]);
+      return { bundle: normalizeCalendarBundle(response, range.from, range.to), workDate, focusDate };
     }
+    const workDate = await readWorkDate();
     const rangeFocus = preferWorkDate ? workDate : validDate(focusDate, workDate);
     const range = calendarLoadRange(rangeFocus);
     const response = await client.request("calendarRange", { query: range, ...(signal ? { signal } : {}) });

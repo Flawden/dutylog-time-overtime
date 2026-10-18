@@ -4954,10 +4954,10 @@ else
 fi
 
 VITEST_TESTS=$(grep -R --include='*.spec.ts' --include='*.test.ts' -h -E '^[[:space:]]*(it|test)\(' frontend/src | wc -l | tr -d ' ')
-if [[ "$VITEST_TESTS" == "100" ]]; then
-  ok "Vitest case baseline: 100"
+if [[ "$VITEST_TESTS" == "105" ]]; then
+  ok "Vitest case baseline: 105"
 else
-  fail "expected 100 Vitest cases, found $VITEST_TESTS"
+  fail "expected 105 Vitest cases, found $VITEST_TESTS"
 fi
 
 
