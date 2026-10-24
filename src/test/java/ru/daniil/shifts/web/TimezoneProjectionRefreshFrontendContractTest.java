@@ -18,7 +18,7 @@ class TimezoneProjectionRefreshFrontendContractTest {
     void profileLoadsBeforeInitialCalendarProjection() throws Exception {
         String boot = read("src/main/resources/static/js/70-user-boot.js");
         int profile = boot.indexOf("await loadProfile();");
-        int month = boot.indexOf("await loadInitialCalendar();");
+        int month = boot.indexOf("await loadMonth();");
         assertTrue(profile >= 0 && month > profile,
                 "the first calendar request must use the persisted work/display zones");
         assertFalse(boot.contains("applyLanguage(state.language);\nloadProfile();"),

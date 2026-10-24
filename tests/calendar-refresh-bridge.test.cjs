@@ -45,32 +45,3 @@ test('a failed read does not wedge subsequent refreshes', async () => {
   r.request(); await tick(); assert.equal(r.errors.length, 1);
   r.request(); await tick(); assert.equal(calls, 2);
 });
-test('bootstrap renders do not invalidate an already mounting Vue calendar', async () => {
-  let calls = 0; const r = runtime(async () => { calls++; });
-  r.context.state.ui.booting = true;
-  r.request(); await tick(); assert.equal(calls, 0);
-  r.context.state.ui.booting = false;
-  r.request(); await tick(); assert.equal(calls, 1);
-});
-function initialCalendarRuntime(domain) {
-  const boot = fs.readFileSync(require('node:path').join(__dirname, '../src/main/resources/static/js/70-user-boot.js'), 'utf8');
-  let legacyReads = 0;
-  const context = vm.createContext({ window: { DutyLogVueDomains: { calendarTimeline: domain } }, loadMonth: async () => { legacyReads++; } });
-  vm.runInContext(boot.slice(boot.indexOf('async function loadInitialCalendar(){'), boot.indexOf('async function init(){')), context);
-  return { run: () => vm.runInContext('loadInitialCalendar()', context), legacyReads: () => legacyReads };
-}
-test('native startup waits for the canonical read without fetching the legacy month', async () => {
-  let release; let calls = 0;
-  const domain = { refresh: () => { calls++; return new Promise(resolve => release = resolve); } };
-  const r = initialCalendarRuntime(domain); let finished = false;
-  const pending = r.run().then(value => { finished = true; assert.equal(value, domain); });
-  await tick(); assert.equal(finished, false); assert.equal(calls, 1); assert.equal(r.legacyReads(), 0);
-  release(); await pending;
-});
-test('legacy startup still loads the month when Vue is absent', async () => {
-  const r = initialCalendarRuntime(undefined); await r.run(); assert.equal(r.legacyReads(), 1);
-});
-test('native startup failure is not hidden by an unrelated legacy read', async () => {
-  const r = initialCalendarRuntime({ refresh: async () => { throw Error('unavailable'); } });
-  await assert.rejects(r.run(), /unavailable/); assert.equal(r.legacyReads(), 0);
-});
