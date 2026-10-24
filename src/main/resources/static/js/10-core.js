@@ -283,7 +283,7 @@ function requestVueCalendarTimelineRefresh(){
   if (document.documentElement.dataset.vueCalendarTimeline !== "ready") return false;
   // Loading indicators are renders, not data invalidations. loadMonth's final
   // render will request the fresh projection once its legacy read has settled.
-  if (vueCalendarTimelineRefreshSuppressed || state.ui?.loadingCalendar) return true;
+  if (vueCalendarTimelineRefreshSuppressed || state.ui?.booting || state.ui?.loadingCalendar) return true;
   vueCalendarTimelineRefreshQueued = true;
   if (vueCalendarTimelineRefreshRunning) return true;
   vueCalendarTimelineRefreshRunning = true;

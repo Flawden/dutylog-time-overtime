@@ -220,6 +220,15 @@ window.addEventListener("unhandledrejection", () => {
   if (state.ui?.booting) hideBootOnStartupError("ошибка загрузки");
 });
 
+async function loadInitialCalendar(){
+  // Vue owns the visible range and publishes the compatibility projection.
+  // Do not overwrite it with a second legacy month read during bootstrap.
+  const nativeCalendar = window.DutyLogVueDomains?.calendarTimeline;
+  if (nativeCalendar) await nativeCalendar.refresh();
+  else await loadMonth();
+  return nativeCalendar;
+}
+
 async function init(){
   armBootFailsafe();
   setAppBooting(true, "Подготавливаем интерфейс…");
@@ -267,14 +276,14 @@ async function init(){
     state.offline.online = false;
     setSave("err", t("нет связи — открыта локальная копия"));
   }
-  await loadMonth();
+  const nativeCalendar = await loadInitialCalendar();
   // Native time-bank routes load their own bundle when entered. Calendar/Today
   // already receive their balance in the calendar projection; do not block boot
   // on vacation, settlement and compensation reads for an unopened workspace.
   if (moduleEnabled("overtime") && !window.DutyLogVueDomains?.absenceTimeBank) await loadLedgerPage(true);
   if (moduleEnabled("tasks")) await Promise.all([loadTaskBoard(true), loadTaskMetadata(true), loadInbox(true)]);
   applyModuleVisibility();
-  if (typeof calendarExperienceRestoreFocus === "function") await calendarExperienceRestoreFocus();
+  if (!nativeCalendar && typeof calendarExperienceRestoreFocus === "function") await calendarExperienceRestoreFocus();
   renderCalendar();
   clearBootFailsafe();
   setAppBooting(false);
