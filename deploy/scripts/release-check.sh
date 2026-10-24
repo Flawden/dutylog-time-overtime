@@ -5623,7 +5623,7 @@ else
   fail "RU-KYA 2026 source-pack SHA mismatch: $RU_KYA_PACK_SHA"
 fi
 
-if node --test tests/offline-owner.test.cjs; then
+if node --test tests/offline-owner.test.cjs tests/calendar-refresh-bridge.test.cjs; then
   ok "offline account isolation and empty queue regressions"
 else
   fail "offline account isolation regression tests failed"

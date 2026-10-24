@@ -270,19 +270,32 @@ function synchronizeLegacyCalendarTimelineProjection(snapshot){
   if (snapshot?.mode && state.calendarExperience) state.calendarExperience.mode = snapshot.mode;
 }
 window.addEventListener(CALENDAR_TIMELINE_PROJECTION_EVENT, event => {
-  synchronizeLegacyCalendarTimelineProjection(event.detail);
+  const previous = vueCalendarTimelineRefreshSuppressed;
+  vueCalendarTimelineRefreshSuppressed = true;
+  try { synchronizeLegacyCalendarTimelineProjection(event.detail); }
+  finally { vueCalendarTimelineRefreshSuppressed = previous; }
 });
 
 let vueCalendarTimelineRefreshQueued = false;
 let vueCalendarTimelineRefreshSuppressed = false;
+let vueCalendarTimelineRefreshRunning = false;
 function requestVueCalendarTimelineRefresh(){
   if (document.documentElement.dataset.vueCalendarTimeline !== "ready") return false;
-  if (vueCalendarTimelineRefreshSuppressed || vueCalendarTimelineRefreshQueued) return true;
+  // Loading indicators are renders, not data invalidations. loadMonth's final
+  // render will request the fresh projection once its legacy read has settled.
+  if (vueCalendarTimelineRefreshSuppressed || state.ui?.loadingCalendar) return true;
   vueCalendarTimelineRefreshQueued = true;
-  Promise.resolve().then(() => {
-    vueCalendarTimelineRefreshQueued = false;
-    return window.DutyLogVueDomains?.calendarTimeline?.refresh?.();
-  }).catch(error => console.error("[DutyLog] Vue calendar refresh failed", error));
+  if (vueCalendarTimelineRefreshRunning) return true;
+  vueCalendarTimelineRefreshRunning = true;
+  Promise.resolve().then(async () => {
+    try {
+      while (vueCalendarTimelineRefreshQueued) {
+        vueCalendarTimelineRefreshQueued = false;
+        try { await window.DutyLogVueDomains?.calendarTimeline?.refresh?.(); }
+        catch (error) { console.error("[DutyLog] Vue calendar refresh failed", error); }
+      }
+    } finally { vueCalendarTimelineRefreshRunning = false; }
+  });
   return true;
 }
 
