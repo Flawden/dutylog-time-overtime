@@ -71,7 +71,7 @@ onBeforeUnmount(() => document.removeEventListener("pointerdown", outsideClick))
   <div ref="root" class="payrollMonthPicker">
     <span class="payrollMonthPickerLabel">{{ label }}</span>
     <button id="payrollMonthTrigger" type="button" class="payrollMonthPickerTrigger"
-      :aria-expanded="opened" aria-haspopup="dialog" :data-value="modelValue" :disabled="disabled" @click="toggle" @keydown.esc="opened = false">
+      :aria-expanded="opened" aria-haspopup="dialog" :data-value="modelValue" :disabled="disabled === true" @click="toggle" @keydown.esc="opened = false">
       <span aria-hidden="true">▦</span><strong>{{ displayMonth }}</strong><span aria-hidden="true">⌄</span>
     </button>
     <div v-if="opened" class="payrollMonthPopover" role="dialog" :aria-label="label" @keydown.esc="opened = false">
