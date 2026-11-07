@@ -1,6 +1,31 @@
 const { test, expect } = require('./fixtures');
 const { registerAndOnboard, currentLocalDateKey, waitForApi, waitForAppIdle, openView, selectDate, runWithOptionalHistoricalTimezoneConfirmation } = require('./helpers');
 
+// Derive expected times from actual IANA rules. Kyiv is UTC+2 in winter and
+// UTC+3 in summer; a fixed +2-hour assumption fails after the DST change.
+const kyivClock = new Intl.DateTimeFormat('en-GB', {
+  timeZone: 'Europe/Kyiv', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+});
+
+function sourceTodayInYekaterinburg() {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Yekaterinburg', year: 'numeric', month: '2-digit', day: '2-digit'
+  }).formatToParts(new Date());
+  const value = type => parts.find(part => part.type === type).value;
+  return `${value('year')}-${value('month')}-${value('day')}`;
+}
+
+function projectYekaterinburgShift(date) {
+  // Asia/Yekaterinburg is fixed at UTC+05:00 for the contemporary test dates.
+  const start = new Date(`${date}T08:30:00+05:00`);
+  const end = new Date(`${date}T17:00:00+05:00`);
+  return {
+    start: kyivClock.format(start),
+    end: kyivClock.format(end),
+    reminder: kyivClock.format(new Date(start.getTime() - 30 * 60_000))
+  };
+}
+
 test('important dates stay floating while canonical timezone survives reload', async ({ page }) => {
   await registerAndOnboard(page, { preset: 'full', prefix: 'important' });
 
@@ -121,6 +146,8 @@ test('existing dated shift keeps its source zone and reprojects after canonical 
   await saved;
 
   // Moving the account must not reinterpret 08:30 as 08:30 in the new zone.
+  const templateProjection = projectYekaterinburgShift(sourceTodayInYekaterinburg());
+  const datedProjection = projectYekaterinburgShift(shiftDate);
   await openView(page, 'settings');
   await page.locator('[data-settings-jump="time"]').click();
   await page.locator('#workTimezone').selectOption('Europe/Kyiv');
@@ -139,8 +166,8 @@ test('existing dated shift keeps its source zone and reprojects after canonical 
   await page.evaluate(() => Promise.resolve(window.__dutylogTimeSettingsSaveReady));
   await waitForAppIdle(page);
   await calendarRefreshed;
-  await expect(page.locator('#defDayStart')).toHaveValue('06:30');
-  await expect(page.locator('#defDayEnd')).toHaveValue('15:00');
+  await expect(page.locator('#defDayStart')).toHaveValue(templateProjection.start);
+  await expect(page.locator('#defDayEnd')).toHaveValue(templateProjection.end);
   await expect(page.locator('#shiftTemplateZoneHint')).toContainText('Europe/Kyiv');
 
   await page.locator('[data-settings-jump="notifications"]').click();
@@ -149,12 +176,12 @@ test('existing dated shift keeps its source zone and reprojects after canonical 
   const notificationsSaved = waitForApi(page, 'PATCH', '/api/v1/notifications/settings');
   await page.locator('#notifSave').click();
   await notificationsSaved;
-  await expect(page.locator('#notifyList')).toContainText('Начало 06:30 Europe/Kyiv');
-  await expect(page.locator('#notifyList')).toContainText('06:00');
+  await expect(page.locator('#notifyList')).toContainText(`Начало ${datedProjection.start} Europe/Kyiv`);
+  await expect(page.locator('#notifyList')).toContainText(datedProjection.reminder);
 
   await selectDate(page, shiftDate);
   const projectedCellAfterTimezoneMove = page.locator(`#grid [data-date="${shiftDate}"]`);
-  await expect(projectedCellAfterTimezoneMove).toContainText('06:30–15:00');
+  await expect(projectedCellAfterTimezoneMove).toContainText(`${datedProjection.start}–${datedProjection.end}`);
   await expect(projectedCellAfterTimezoneMove).not.toContainText('08:30–17:00');
   await expect(page.locator('#panel')).toBeVisible();
 });
