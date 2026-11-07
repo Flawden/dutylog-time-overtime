@@ -36,9 +36,32 @@ type PayrollTab = "overview" | "earnings" | "settings" | "history";
 const activeTab = ref<PayrollTab>("overview");
 type SettingsSection = "terms" | "components" | "rules" | "norm";
 const settingsSection = ref<SettingsSection | null>(null);
-function toggleSettingsSection(section: SettingsSection): void {
-  settingsSection.value = settingsSection.value === section ? null : section;
+function openSettingsSection(section: SettingsSection): void {
+  settingsSection.value = section;
 }
+function closeSettingsSection(): void {
+  settingsSection.value = null;
+}
+const settingsDetailTitle = computed(() => {
+  const labels: Record<SettingsSection, { ru: string; en: string }> = {
+    terms: { ru: "Условия оплаты", en: "Pay terms" },
+    components: { ru: "Доплаты и надбавки", en: "Allowances and bonuses" },
+    rules: { ru: "Правила оплаты", en: "Pay rules" },
+    norm: { ru: "Норма времени", en: "Working-time norm" },
+  };
+  const label = settingsSection.value ? labels[settingsSection.value] : null;
+  return language.value === "en" ? label?.en ?? "Settings" : label?.ru ?? "Настройки";
+});
+const settingsDetailDescription = computed(() => {
+  const descriptions: Record<SettingsSection, { ru: string; en: string }> = {
+    terms: { ru: "Оклад, ставка, валюта и история условий", en: "Salary, hourly rate, currency and pay history" },
+    components: { ru: "Премии, коэффициенты и дополнительные выплаты", en: "Bonuses, coefficients and other payments" },
+    rules: { ru: "Оплата ночной работы, праздников и переработок", en: "Night, holiday and overtime payment settings" },
+    norm: { ru: "Производственный календарь и расчётная норма", en: "Production calendar and working-time norm" },
+  };
+  const description = settingsSection.value ? descriptions[settingsSection.value] : null;
+  return language.value === "en" ? description?.en ?? "" : description?.ru ?? "";
+});
 const readableMonth = computed(() => {
   const match = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(month.value);
   if (!match) return month.value;
@@ -224,9 +247,9 @@ onBeforeUnmount(()=>{if(previousDomain)window.DutyLogVueDomains=Object.freeze({.
 
 </section>
 <section v-show="activeTab === 'settings'" id="payroll-panel-settings" role="tabpanel" aria-labelledby="payroll-tab-settings" class="payrollTabBody payrollSettingsBody">
-<div class="payrollSettingsTiles" :aria-label="language === 'en' ? 'Payroll settings sections' : 'Разделы настроек зарплаты'">
+<div v-show="settingsSection === null" class="payrollSettingsTiles" :aria-label="language === 'en' ? 'Payroll settings sections' : 'Разделы настроек зарплаты'">
   <button id="payroll-settings-terms" type="button" class="payrollSettingsTile" :class="{active: settingsSection === 'terms'}"
-    :aria-expanded="settingsSection === 'terms'" aria-controls="payroll-settings-panel-terms" @click="toggleSettingsSection('terms')">
+    :aria-expanded="settingsSection === 'terms'" aria-controls="payroll-settings-panel-terms" @click="openSettingsSection('terms')">
     <span class="payrollSettingsTileIcon payrollSettingsTileIcon--terms" aria-hidden="true">▣</span>
     <span class="payrollSettingsTileText"><strong>{{ language === 'en' ? 'Pay terms' : 'Условия оплаты' }}</strong>
       <small>{{ language === 'en' ? 'Salary, hourly rate, currency and dates' : 'Оклад, ставка, валюта и период действия' }}</small>
@@ -234,7 +257,7 @@ onBeforeUnmount(()=>{if(previousDomain)window.DutyLogVueDomains=Object.freeze({.
     </span><span aria-hidden="true" class="payrollSettingsChevron">›</span>
   </button>
   <button id="payroll-settings-components" type="button" class="payrollSettingsTile" :class="{active: settingsSection === 'components'}"
-    :aria-expanded="settingsSection === 'components'" aria-controls="payroll-settings-panel-components" @click="toggleSettingsSection('components')">
+    :aria-expanded="settingsSection === 'components'" aria-controls="payroll-settings-panel-components" @click="openSettingsSection('components')">
     <span class="payrollSettingsTileIcon payrollSettingsTileIcon--components" aria-hidden="true">▤</span>
     <span class="payrollSettingsTileText"><strong>{{ text.compensationComponents }}</strong>
       <small>{{ language === 'en' ? 'Bonuses, region coefficients and allowances' : 'Премии, коэффициенты и дополнительные выплаты' }}</small>
@@ -242,7 +265,7 @@ onBeforeUnmount(()=>{if(previousDomain)window.DutyLogVueDomains=Object.freeze({.
     </span><span aria-hidden="true" class="payrollSettingsChevron">›</span>
   </button>
   <button id="payroll-settings-rules" type="button" class="payrollSettingsTile" :class="{active: settingsSection === 'rules'}"
-    :aria-expanded="settingsSection === 'rules'" aria-controls="payroll-settings-panel-rules" @click="toggleSettingsSection('rules')">
+    :aria-expanded="settingsSection === 'rules'" aria-controls="payroll-settings-panel-rules" @click="openSettingsSection('rules')">
     <span class="payrollSettingsTileIcon payrollSettingsTileIcon--rules" aria-hidden="true">☷</span>
     <span class="payrollSettingsTileText"><strong>{{ language === 'en' ? 'Pay rules' : 'Правила оплаты' }}</strong>
       <small>{{ language === 'en' ? 'Nights, holidays and cash overtime' : 'Ночная работа, праздники и выплата переработки' }}</small>
@@ -250,7 +273,7 @@ onBeforeUnmount(()=>{if(previousDomain)window.DutyLogVueDomains=Object.freeze({.
     </span><span aria-hidden="true" class="payrollSettingsChevron">›</span>
   </button>
   <button id="payroll-settings-norm" type="button" class="payrollSettingsTile" :class="{active: settingsSection === 'norm'}"
-    :aria-expanded="settingsSection === 'norm'" aria-controls="payroll-settings-panel-norm" @click="toggleSettingsSection('norm')">
+    :aria-expanded="settingsSection === 'norm'" aria-controls="payroll-settings-panel-norm" @click="openSettingsSection('norm')">
     <span class="payrollSettingsTileIcon payrollSettingsTileIcon--norm" aria-hidden="true">▦</span>
     <span class="payrollSettingsTileText"><strong>{{ language === 'en' ? 'Working-time norm' : 'Норма времени' }}</strong>
       <small>{{ language === 'en' ? 'Production calendar and required hours' : 'Производственный календарь и расчётная норма' }}</small>
@@ -259,11 +282,23 @@ onBeforeUnmount(()=>{if(previousDomain)window.DutyLogVueDomains=Object.freeze({.
   </button>
 </div>
 
-<div id="payroll-settings-panel-terms" v-show="settingsSection === 'terms'" class="payrollSettingsEditor" role="region" aria-labelledby="payroll-settings-terms">
+<div v-show="settingsSection !== null" class="payrollSettingsDetail" data-payroll-settings-detail>
+  <header class="payrollSettingsDetailHeader">
+    <button id="payroll-settings-back" type="button" class="payrollSettingsBack" @click="closeSettingsSection">
+      <span aria-hidden="true">←</span> {{ language === 'en' ? 'Back to settings' : 'Назад к настройкам' }}
+    </button>
+    <div class="payrollSettingsDetailIntro">
+      <div class="eyebrow">{{ language === 'en' ? 'Payroll settings' : 'Настройки зарплаты' }}</div>
+      <h2 id="payroll-settings-detail-title">{{ settingsDetailTitle }}</h2>
+      <p>{{ settingsDetailDescription }}</p>
+    </div>
+  </header>
+
+<div id="payroll-settings-panel-terms" v-show="settingsSection === 'terms'" class="payrollSettingsEditor" role="region" aria-labelledby="payroll-settings-detail-title">
 <section class="card payrollSettingsCard payrollCompensationCard"><div class="payrollSectionHead"><div><div class="eyebrow">Compensation</div><h3>{{ text.setup }}</h3></div></div><form id="payrollSettingsForm" class="payrollSettingsForm nativeCompensationForm" @submit.prevent="saveCompensation"><div class="compensationModeSwitch"><button type="button" :class="{active:payMode==='HOURLY'}" @click="payMode='HOURLY'">{{ text.hourly }}</button><button type="button" :class="{active:payMode==='SALARY'}" @click="payMode='SALARY'">{{ text.salary }}</button></div><label>{{ text.effective }}<input id="payrollCompensationMonth" v-model="effectiveMonth" type="month" required/></label><label>{{ text.currencyCode }}<input id="payrollCurrency" v-model="currencyCode" maxlength="3" pattern="[A-Za-z]{3}" required/></label><label>{{ payMode==='SALARY'?text.salary:text.hourly }}<input id="payrollHourlyRate" v-model="compensationAmount" type="number" min="0.01" max="10000000000" step="0.01" required/></label><button class="primary" type="submit" :disabled="loading">{{ text.save }}</button></form><p class="payrollHint">{{ payMode==='SALARY'?text.salaryHint:text.hourlyHint }}</p>
 <div v-if="compensationHistory.length" class="compensationHistory"><div class="eyebrow">{{ text.history }}</div><article v-for="item in compensationHistory" :key="item.id" class="compensationHistoryRow"><span><b>{{ compensationMonthLabel(item.effectiveMonth) }} · {{ item.payMode==='SALARY'?text.salary:text.hourly }}</b><small>{{ item.payMode==='SALARY'?money(item.monthlySalaryMinor,item.currencyCode):`${money(item.hourlyRateMinor,item.currencyCode)} / ч` }}</small></span><button v-if="item.effectiveMonth !== '1970-01'" type="button" :disabled="loading" @click="removeCompensation(item.effectiveMonth)">{{ text.remove }}</button></article></div></section>
 </div>
-<div id="payroll-settings-panel-components" v-show="settingsSection === 'components'" class="payrollSettingsEditor" role="region" aria-labelledby="payroll-settings-components">
+<div id="payroll-settings-panel-components" v-show="settingsSection === 'components'" class="payrollSettingsEditor" role="region" aria-labelledby="payroll-settings-detail-title">
 <CompensationComponentsCard
   :language="language"
   :month="month"
@@ -271,11 +306,12 @@ onBeforeUnmount(()=>{if(previousDomain)window.DutyLogVueDomains=Object.freeze({.
 />
 </div>
 
-<div id="payroll-settings-panel-rules" v-show="settingsSection === 'rules'" class="payrollSettingsEditor" role="region" aria-labelledby="payroll-settings-rules">
+<div id="payroll-settings-panel-rules" v-show="settingsSection === 'rules'" class="payrollSettingsEditor" role="region" aria-labelledby="payroll-settings-detail-title">
 <PricingSettingsCard :language="language" />
 </div>
-<div id="payroll-settings-panel-norm" v-show="settingsSection === 'norm'" class="payrollSettingsEditor" role="region" aria-labelledby="payroll-settings-norm">
+<div id="payroll-settings-panel-norm" v-show="settingsSection === 'norm'" class="payrollSettingsEditor" role="region" aria-labelledby="payroll-settings-detail-title">
 <section class="card productionCalendarCard" data-production-calendar-foundation><div class="payrollSectionHead"><div><div class="eyebrow">Production Calendar</div><h3>{{ text.production }}</h3></div><button type="button" @click="openCalendar">{{ text.openCalendar }}</button></div><div class="productionNormMetrics"><div><span>{{ text.base }}</span><b id="productionBaseNorm">{{ minutes(productionCalendar?.baseNormMinutes) }}</b></div><div><span>{{ text.adjustment }}</span><b id="productionNormAdjustment">{{ minutes(productionCalendar?.adjustmentMinutes) }}</b></div><div class="accent"><span>{{ text.production }}</span><b id="productionNorm">{{ minutes(productionCalendar?.productionNormMinutes) }}</b></div></div><p v-if="productionCalendar&&!productionCalendar.scheduleCoverageComplete" id="productionCoverageWarning" class="productionCoverageWarning">{{ text.coverageWarn }}</p><div class="productionCalendarRules" data-production-calendar-summary-only><article v-for="day in productionAffectedDays" :key="day.date" class="productionCalendarRule productionCalendarRule--summary"><span><b>{{ day.date }}</b><small>{{ day.label || day.dayKind }}</small></span><strong>{{ minutes(day.baseNormMinutes) }} → {{ minutes(day.productionNormMinutes) }}</strong></article><div v-if="!productionAffectedDays.length" class="payrollEmpty">{{ text.noRules }}</div></div></section>
+</div>
 </div>
 </section>
 <section v-show="activeTab === 'history'" id="payroll-panel-history" role="tabpanel" aria-labelledby="payroll-tab-history" class="payrollTabBody">
@@ -286,6 +322,21 @@ onBeforeUnmount(()=>{if(previousDomain)window.DutyLogVueDomains=Object.freeze({.
 </div></section></template>
 
 <style scoped>
+
+/* UX-P0.2: settings catalog and the selected editor occupy separate screens. */
+.payrollSettingsDetail { display: grid; gap: 16px; min-width: 0; }
+.payrollSettingsDetailHeader { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 16px; padding: 18px 20px; border: 1px solid var(--payroll-ux-line); border-radius: 16px; background: var(--panel); }
+.payrollSettingsBack { display: inline-flex; align-items: center; gap: 8px; flex: none; min-height: 42px; font-weight: 700; color: var(--accent); }
+.payrollSettingsBack:hover { border-color: var(--accent); }
+.payrollSettingsBack:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.payrollSettingsDetailIntro { display: grid; gap: 7px; min-width: 230px; flex: 1; }
+.payrollSettingsDetailIntro h2 { margin: 0; font-size: clamp(1.2rem, 2vw, 1.5rem); color: var(--text); }
+.payrollSettingsDetailIntro p { margin: 0; color: var(--mut); line-height: 1.45; font-size: .86rem; }
+@media (max-width: 640px) {
+  .payrollSettingsDetailHeader { padding: 15px; flex-direction: column; gap: 12px; }
+  .payrollSettingsBack { align-self: flex-start; }
+  .payrollSettingsDetailIntro { min-width: 0; }
+}
 
 /* UX-P0.1: focused, two-column settings instead of a continuous form. */
 .payrollSettingsTiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
