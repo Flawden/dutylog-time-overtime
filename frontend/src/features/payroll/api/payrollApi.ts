@@ -12,6 +12,10 @@ import type {
 export function createPayrollApi(client: DutyLogGeneratedApiClient = createGeneratedDutyLogApiClient()) {
   return Object.freeze({
     holidayReview(month: string) { return client.request("getHolidayReview", { path: { month } }); },
+    restDayElections(month: string) { return client.request("getArticle153RestDayElections", { path: { month } }); },
+    electRestDay(month: string, body: import("@/generated/dutylog-api").DutyLogApiSchemas.Article153ElectionRequest) {
+      return client.request("electArticle153RestDay", { path: { month }, body });
+    },
     saveHolidayReview(month: string, body: import("@/generated/dutylog-api").DutyLogApiSchemas.HolidayReviewSubmission) { return client.request("saveHolidayReview", { path: { month }, body }); },
     period(month: string) { return client.request("payrollPeriod", { path: { month } }); },
     pricingTerms() { return client.request("listPayrollPricingTerms"); },

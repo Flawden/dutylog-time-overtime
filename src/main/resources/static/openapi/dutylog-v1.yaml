@@ -10,6 +10,37 @@ servers:
 security:
   - bearerAuth: []
 paths:
+  /api/v1/payroll/periods/{month}/rest-day-elections:
+    parameters:
+      - name: month
+        in: path
+        required: true
+        schema: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' }
+    get:
+      operationId: getArticle153RestDayElections
+      responses:
+        '200':
+          description: Event-specific rest-day election choices, or blocking source evidence
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Article153ElectionWorkspace' }
+        '403': { $ref: '#/components/responses/ApiError' }
+    post:
+      operationId: electArticle153RestDay
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Article153ElectionRequest' }
+      responses:
+        '200':
+          description: Owner-scoped election persisted; not an overtime-bank debit
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Article153ElectionFact' }
+        '400': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+        '409': { $ref: '#/components/responses/ApiError' }
   /api/v1/payroll/periods/{month}/holiday-review:
     parameters:
       - name: month
@@ -4382,6 +4413,57 @@ components:
         items:
           type: array
           items: { $ref: '#/components/schemas/MobileSyncItemResult' }
+    Article153ElectionRequest:
+      type: object
+      additionalProperties: false
+      required: [workDate, sourceKind, sourceEntityId, expectedSourceFingerprint]
+      properties:
+        workDate: { type: string, format: date }
+        sourceKind: { type: string, enum: [EXPLICIT, PLAN_DERIVED] }
+        sourceEntityId: { type: integer, format: int64, minimum: 1 }
+        expectedSourceFingerprint: { type: string, pattern: '^[0-9a-f]{64}$' }
+    Article153ElectionChoice:
+      type: object
+      required: [workDate, sourceKind, sourceEntityId, qualifiedMinutes, state, sourceFingerprint, blockingReason, electedAt]
+      properties:
+        workDate: { type: string, format: date }
+        sourceKind: { type: string, enum: [EXPLICIT, PLAN_DERIVED] }
+        sourceEntityId: { type: integer, format: int64 }
+        qualifiedMinutes: { type: integer }
+        state: { type: string, enum: [NONE, ELECTED, BLOCKED] }
+        sourceFingerprint: { type: string, nullable: true }
+        blockingReason: { type: string, nullable: true }
+        electedAt: { type: string, format: date-time, nullable: true }
+    Article153ElectionWorkspace:
+      type: object
+      required: [month, ready, blockers, choices]
+      properties:
+        month: { type: string }
+        ready: { type: boolean }
+        blockers: { type: array, items: { type: string } }
+        choices: { type: array, items: { $ref: '#/components/schemas/Article153ElectionChoice' } }
+    Article153ElectionFact:
+      type: object
+      required: [electionId, workDate, sourceKind, sourceIdentity, sourceEvidenceTimezone, qualifiedCause, qualifiedMinutes, sourceEventFingerprint, status, electedAt]
+      properties:
+        electionId: { type: integer, format: int64 }
+        workDate: { type: string, format: date }
+        sourceKind: { type: string }
+        sourceIdentity: { type: string }
+        sourceActualWorkIntervalId: { type: integer, format: int64, nullable: true }
+        sourceDayEntryId: { type: integer, format: int64, nullable: true }
+        sourceEvidenceStartInstant: { type: string, format: date-time }
+        sourceEvidenceEndInstant: { type: string, format: date-time }
+        sourceEvidenceTimezone: { type: string }
+        qualifiedCause: { type: string }
+        qualifiedMinutes: { type: integer }
+        sourceEventFingerprint: { type: string }
+        status: { type: string, enum: [ELECTED, REVOKED] }
+        electedAt: { type: string, format: date-time }
+        revokedAt: { type: string, format: date-time, nullable: true }
+        revocationReason: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
     HolidayReviewSource:
       type: object
       additionalProperties: false

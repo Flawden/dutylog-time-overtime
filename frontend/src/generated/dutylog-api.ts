@@ -2,12 +2,12 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  * Source: src/main/resources/static/openapi/dutylog-v1.yaml
- * SHA-256: 9b2ea9fc8926919143e103eef0aca8f429007dcdec7005a57279ec543b75285c
+ * SHA-256: b5b22267e4883be9adb072f32171ee787dfeb639e3c4d91f5d189f2830d06345
  * Generator: frontend/scripts/generate-openapi-contract.mjs
- * Contract: 148 operations, 166 schemas
+ * Contract: 150 operations, 170 schemas
  */
 
-export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "9b2ea9fc8926919143e103eef0aca8f429007dcdec7005a57279ec543b75285c";
+export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "b5b22267e4883be9adb072f32171ee787dfeb639e3c4d91f5d189f2830d06345";
 
 export namespace DutyLogApiSchemas {
   export type AbsenceOccurrence = {
@@ -305,6 +305,52 @@ export namespace DutyLogApiSchemas {
     moduleKey?: string | null;
     requestId?: string | null;
     timestamp: string;
+  };
+
+  export type Article153ElectionChoice = {
+    workDate: string;
+    sourceKind: "EXPLICIT" | "PLAN_DERIVED";
+    sourceEntityId: number;
+    qualifiedMinutes: number;
+    state: "NONE" | "ELECTED" | "BLOCKED";
+    sourceFingerprint: string | null;
+    blockingReason: string | null;
+    electedAt: string | null;
+  };
+
+  export type Article153ElectionFact = {
+    electionId: number;
+    workDate: string;
+    sourceKind: string;
+    sourceIdentity: string;
+    sourceActualWorkIntervalId?: number | null;
+    sourceDayEntryId?: number | null;
+    sourceEvidenceStartInstant?: string;
+    sourceEvidenceEndInstant?: string;
+    sourceEvidenceTimezone: string;
+    qualifiedCause: string;
+    qualifiedMinutes: number;
+    sourceEventFingerprint: string;
+    status: "ELECTED" | "REVOKED";
+    electedAt: string;
+    revokedAt?: string | null;
+    revocationReason?: string | null;
+    createdAt?: string;
+    updatedAt?: string;
+  };
+
+  export type Article153ElectionRequest = {
+    workDate: string;
+    sourceKind: "EXPLICIT" | "PLAN_DERIVED";
+    sourceEntityId: number;
+    expectedSourceFingerprint: string;
+  };
+
+  export type Article153ElectionWorkspace = {
+    month: string;
+    ready: boolean;
+    blockers: Array<string>;
+    choices: Array<DutyLogApiSchemas.Article153ElectionChoice>;
   };
 
   export type CalendarLayer = {
@@ -1877,10 +1923,12 @@ export const dutyLogOperations = {
   "deleteScheduleTemplate": { method: "DELETE", path: "/api/v1/schedule-templates/{id}" },
   "deleteShiftType": { method: "DELETE", path: "/api/v1/shift-types/{id}" },
   "deleteTask": { method: "DELETE", path: "/api/v1/tasks/{taskId}" },
+  "electArticle153RestDay": { method: "POST", path: "/api/v1/payroll/periods/{month}/rest-day-elections" },
   "exportCalendarRange": { method: "GET", path: "/api/v1/calendar-sync/export" },
   "exportImportantEventIcs": { method: "GET", path: "/api/v1/calendar-sync/events/{id}.ics" },
   "exportNotes": { method: "GET", path: "/api/v1/export/notes" },
   "getAdminRegistrationSettings": { method: "GET", path: "/api/v1/admin/settings/registration" },
+  "getArticle153RestDayElections": { method: "GET", path: "/api/v1/payroll/periods/{month}/rest-day-elections" },
   "getCalendarSyncStatus": { method: "GET", path: "/api/v1/calendar-sync/status" },
   "getHolidayReview": { method: "GET", path: "/api/v1/payroll/periods/{month}/holiday-review" },
   "getNotificationSettings": { method: "GET", path: "/api/v1/notifications/settings" },
@@ -2156,6 +2204,10 @@ export interface DutyLogOperationTypes {
     requestBody: undefined;
     response: undefined;
   };
+  "electArticle153RestDay": {
+    requestBody: DutyLogApiSchemas.Article153ElectionRequest;
+    response: DutyLogApiSchemas.Article153ElectionFact;
+  };
   "exportCalendarRange": {
     requestBody: undefined;
     response: string;
@@ -2171,6 +2223,10 @@ export interface DutyLogOperationTypes {
   "getAdminRegistrationSettings": {
     requestBody: undefined;
     response: DutyLogApiSchemas.AdminRegistrationSettings;
+  };
+  "getArticle153RestDayElections": {
+    requestBody: undefined;
+    response: DutyLogApiSchemas.Article153ElectionWorkspace;
   };
   "getCalendarSyncStatus": {
     requestBody: undefined;

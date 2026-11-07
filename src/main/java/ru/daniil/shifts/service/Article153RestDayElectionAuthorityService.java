@@ -17,7 +17,9 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -77,7 +79,79 @@ public class Article153RestDayElectionAuthorityService {
     }
 
     /**
+     * UI-facing summary of exact qualified work events for one month. An
+     * unresolved month is not presented as a list of eligible choices.
+     * This read does not modify Payroll, Time Bank or election history.
+     */
+    @Transactional(readOnly = true)
+    public MonthlyWorkspace workspace(AppUser user, YearMonth month) {
+        Objects.requireNonNull(user, "Article 153 election workspace requires user");
+        Objects.requireNonNull(month, "Article 153 election workspace requires month");
+
+        HolidayPayQualifiedCauseAuthorityService.Resolution qualified =
+                Objects.requireNonNull(qualifiedAuthority.resolve(user, month),
+                        "Article 153 qualified month must exist");
+        if (!qualified.ready()) {
+            return new MonthlyWorkspace(month.toString(), false, qualified.blockers().stream()
+                    .map(b -> b.date() + ":" + b.kind() + ":" + b.reason())
+                    .toList(), List.of());
+        }
+
+        Map<SourceKey, Integer> minutes = new LinkedHashMap<>();
+        for (QualifiedPiece piece : qualified.pieces()) {
+            SourcePiece source = piece.sourcePiece();
+            SourceKind kind = source.sourceKind();
+            Long entityId = switch (kind) {
+                case EXPLICIT -> source.sourceActualWorkIntervalId();
+                case PLAN_DERIVED -> source.sourceDayEntryId();
+            };
+            if (entityId == null || entityId <= 0L) {
+                throw new IllegalStateException("Qualified Article 153 source has no identity");
+            }
+            minutes.merge(new SourceKey(piece.payrollDate(), kind, entityId),
+                    piece.minutes(), Math::addExact);
+        }
+
+        List<ElectionChoice> choices = minutes.entrySet().stream()
+                .sorted(Comparator.comparing((Map.Entry<SourceKey, Integer> e) -> e.getKey().date())
+                        .thenComparing(e -> e.getKey().kind().name())
+                        .thenComparingLong(e -> e.getKey().id()))
+                .map(e -> {
+                    SourceKey key = e.getKey();
+                    Resolution state = resolve(user, key.date(), key.kind(), key.id());
+                    return new ElectionChoice(key.date(), key.kind().name(), key.id(),
+                            e.getValue(), state.state().name(),
+                            state.currentSourceFingerprint(), state.blockingReason(),
+                            state.fact() == null ? null : state.fact().electedAt());
+                })
+                .toList();
+        return new MonthlyWorkspace(month.toString(), true, List.of(), choices);
+    }
+
+    private record SourceKey(LocalDate date, SourceKind kind, long id) {}
+
+    public record ElectionChoice(LocalDate workDate, String sourceKind,
+            long sourceEntityId, int qualifiedMinutes, String state,
+            String sourceFingerprint, String blockingReason, Instant electedAt) {}
+
+    public record MonthlyWorkspace(String month, boolean ready,
+            List<String> blockers, List<ElectionChoice> choices) {
+        public MonthlyWorkspace {
+            blockers = List.copyOf(blockers);
+            choices = List.copyOf(choices);
+        }
+    }
+
+    /** Backward compatible domain call for existing trusted back-end flows. */
+    @Transactional
+    public ElectionFact elect(AppUser user, LocalDate workDate,
+            SourceKind sourceKind, long sourceEntityId) {
+        return elect(user, workDate, sourceKind, sourceEntityId, null);
+    }
+
+    /**
      * Persist an employee election for one exact qualifying source event.
+     * A browser must submit the exact source fingerprint that it reviewed.
      * Repeating the same request is idempotent while the source fingerprint is
      * unchanged. A changed source or a previously revoked election fails closed.
      */
@@ -86,7 +160,8 @@ public class Article153RestDayElectionAuthorityService {
             AppUser user,
             LocalDate workDate,
             SourceKind sourceKind,
-            long sourceEntityId
+            long sourceEntityId,
+            String expectedSourceFingerprint
     ) {
         SourceEvent event = requireCurrentEvent(
                 user,
@@ -94,6 +169,12 @@ public class Article153RestDayElectionAuthorityService {
                 sourceKind,
                 sourceEntityId
         );
+        if (expectedSourceFingerprint != null
+                && !expectedSourceFingerprint.equals(event.fingerprint())) {
+            throw new IllegalStateException(
+                    "ARTICLE153_REST_DAY_ELECTION_STALE_SOURCE:" + event.sourceIdentity()
+            );
+        }
 
         Article153RestDayElection existing =
                 elections.findByOwnerAndWorkDateAndSourceIdentity(

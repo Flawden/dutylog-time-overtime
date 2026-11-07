@@ -308,6 +308,73 @@ class Article153RestDayElectionAuthorityServiceTest {
                 Article153RestDayElectionAuthorityService.ElectionFact::sourceIdentity).toList());
     }
 
+    @Test
+    void workspaceListsOnlyQualifiedEventsAndUsesSourceLockedStatus() {
+        LocalDate date = LocalDate.of(2026, 5, 9);
+        SourcePiece piece = explicit(date, 819L, Instant.parse("2026-05-09T06:00:00Z"), 90);
+        stubReady(date, piece);
+        when(elections.findByOwnerAndWorkDateAndSourceIdentity(user, date, "EXPLICIT:819"))
+                .thenReturn(Optional.empty());
+
+        var workspace = service.workspace(user, YearMonth.from(date));
+
+        assertTrue(workspace.ready());
+        assertEquals(1, workspace.choices().size());
+        var choice = workspace.choices().get(0);
+        assertEquals("NONE", choice.state());
+        assertEquals(date, choice.workDate());
+        assertEquals(819L, choice.sourceEntityId());
+        assertEquals(90, choice.qualifiedMinutes());
+        assertEquals("EXPLICIT", choice.sourceKind());
+        assertTrue(choice.sourceFingerprint().matches("[0-9a-f]{64}"));
+    }
+
+    @Test
+    void workspaceBlockedMonthNeverOffersAnElection() {
+        LocalDate date = LocalDate.of(2026, 5, 9);
+        YearMonth month = YearMonth.from(date);
+        when(qualifiedAuthority.resolve(user, month)).thenReturn(
+                new HolidayPayQualifiedCauseAuthorityService.Resolution(month,
+                        false, null, List.of(), List.of(
+                                new BlockingDay(date, BlockerKind.SOURCE, "MISSING_EVIDENCE"))));
+
+        var workspace = service.workspace(user, month);
+
+        assertFalse(workspace.ready());
+        assertTrue(workspace.choices().isEmpty());
+        assertTrue(workspace.blockers().get(0).contains("MISSING_EVIDENCE"));
+        verify(elections, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void freshBrowserFingerprintPersistsElectionForExactSource() {
+        LocalDate date = LocalDate.of(2026, 5, 9);
+        stubReady(date, explicit(date, 42L, Instant.parse("2026-05-09T06:00:00Z"), 60));
+        when(elections.findByOwnerAndWorkDateAndSourceIdentity(user, date, "EXPLICIT:42"))
+                .thenReturn(Optional.empty());
+        String fingerprint = service.resolve(user, date, SourceKind.EXPLICIT, 42L)
+                .currentSourceFingerprint();
+
+        var fact = service.elect(user, date, SourceKind.EXPLICIT, 42L, fingerprint);
+
+        assertEquals(42L, fact.sourceActualWorkIntervalId());
+        assertEquals(fingerprint, fact.sourceEventFingerprint());
+        assertEquals(Article153RestDayElection.STATUS_ELECTED, fact.status());
+        verify(elections).saveAndFlush(any(Article153RestDayElection.class));
+    }
+
+    @Test
+    void staleBrowserFingerprintCannotPersistElection() {
+        LocalDate date = LocalDate.of(2026, 5, 9);
+        stubReady(date, explicit(date, 29L, Instant.parse("2026-05-09T06:00:00Z"), 60));
+
+        var error = assertThrows(IllegalStateException.class,
+                () -> service.elect(user, date, SourceKind.EXPLICIT, 29L, "b".repeat(64)));
+
+        assertTrue(error.getMessage().startsWith("ARTICLE153_REST_DAY_ELECTION_STALE_SOURCE"));
+        verify(elections, never()).saveAndFlush(any());
+    }
+
     private void stubReady(LocalDate date, SourcePiece... sourcePieces) {
         List<QualifiedPiece> pieces = java.util.Arrays.stream(sourcePieces)
                 .map(piece -> qualified(date, piece))
