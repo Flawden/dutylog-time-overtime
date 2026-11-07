@@ -25,17 +25,19 @@ test('reviewed holiday explanation comes from each preview and frozen revision w
       ordinaryPremiumPricingFingerprint:'a'.repeat(64), supersededById:null,
       article153:{ ...reviewed, tariffPremiumMinor:40000, componentPremiumMinor:0, preservedNightPremiumMinor:1000 }, totalPayMinor:91000 }];
   });
+  await page.getByRole('tab', { name:'Начисления' }).click();
   const preview = page.locator('.payrollMoneyCard [data-testid="article153-reviewed"]');
   await expect(preview).toContainText('Подтверждённые минуты: 60');
   await expect(preview).toContainText(/Праздничная: тариф: 500/);
   await expect(preview).toContainText(/Праздничная: компоненты: 125/);
   await expect(preview).toContainText(/Ночная: 25/);
+  await expect(page.locator('#payrollGrandTotal')).toContainText(/1\s*275/);
+  await expect(page.locator('#payrollTotalScope')).toContainText('НДФЛ, авансы и фактические выплаты автоматически не рассчитываются');
+  await page.getByRole('tab', { name:'История' }).click();
   const history=page.locator('#payrollSnapshotList [data-testid="article153-reviewed"]');
   await expect(history).toContainText(/Праздничная: тариф: 400/);
   await expect(history).toContainText(/Праздничная: компоненты: 0/);
   await expect(history).toContainText(/Ночная: 10/);
-  await expect(page.locator('#payrollGrandTotal')).toContainText(/1\s*275/);
-  await expect(page.locator('#payrollTotalScope')).toContainText('НДФЛ, авансы и фактические выплаты автоматически не рассчитываются');
   await expect(page.getByText('Итого к выплате')).toHaveCount(0);
 });
 
@@ -48,6 +50,7 @@ test('stale source review explains blocked saving and does not display invented 
       article153:{ status:'REVIEW_BLOCKED', blockingReason:body.blockingReason, qualifiedMinutes:null,
         tariffPremiumMinor:null, componentPremiumMinor:null, preservedNightPremiumMinor:null } });
   });
+  await page.getByRole('tab', { name:'Начисления' }).click();
   await expect(page.locator('#payrollCalculate')).toBeDisabled();
   await expect(page.locator('#payrollBlocking')).toContainText('Обнови подтверждение');
   await expect(page.getByTestId('article153-review_blocked')).toContainText('Условия оплаты изменились');

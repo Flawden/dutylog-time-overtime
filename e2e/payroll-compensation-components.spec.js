@@ -673,6 +673,7 @@ test(
       await waitForPayrollReady(page);
     }
 
+    await page.getByRole('tab', { name:'Начисления' }).click();
     await expect(
       page.locator(
         '#payrollCompensationComponentBreakdown',
@@ -693,6 +694,7 @@ test(
       ),
     ).toContainText('250');
 
+    await page.getByRole('tab', { name:'История' }).click();
     await expect(
       page.locator('#payrollSnapshotList'),
     ).toContainText(
@@ -717,6 +719,7 @@ test(
       /Ревизия 2|Revision 2/,
     );
 
+    await page.getByRole('tab', { name:'Настройки' }).click();
     const preset =
       page.locator(
         '#compensationComponentPreset',

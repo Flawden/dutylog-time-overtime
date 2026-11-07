@@ -209,6 +209,8 @@ test('native NIGHT pricing adds configured premium from factual work into Payrol
   await expect(page.locator('#payrollIntegrityStatus'))
     .toContainText(/согласован|healthy/i);
 
+  await page.getByRole('tab', { name:'Начисления' }).click();
+
   await expect(page.locator('#payrollWorked'))
     .toContainText(/1\s*(ч|h)/i);
 
@@ -223,6 +225,8 @@ test('native NIGHT pricing adds configured premium from factual work into Payrol
 
   await expect(page.locator('#payrollGrandTotal'))
     .toContainText(/1[^\d]*200/);
+
+  await page.getByRole('tab', { name:'История' }).click();
 
   await expect(page.locator('#payrollSnapshotList'))
     .toContainText(/Ревизия 1|Revision 1/);

@@ -203,6 +203,8 @@ test('native HOLIDAY pricing adds configured premium from production calendar in
   await expect(page.locator('#payrollPeriodStatus'))
     .toContainText(/закрыт|closed/i);
 
+  await page.getByRole('tab', { name:'Начисления' }).click();
+
   await expect(page.locator('#payrollWorked'))
     .toContainText(/1\s*(ч|h)/i);
 
@@ -217,6 +219,8 @@ test('native HOLIDAY pricing adds configured premium from production calendar in
 
   await expect(page.locator('#payrollGrandTotal'))
     .toContainText(/2[^\d]*000/);
+
+  await page.getByRole('tab', { name:'История' }).click();
 
   await expect(page.locator('#payrollSnapshotList'))
     .toContainText(/Ревизия 1|Revision 1/);

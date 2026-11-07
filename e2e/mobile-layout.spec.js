@@ -69,6 +69,7 @@ test('payroll manual operation controls have usable touch targets', async ({ pag
   await page.waitForLoadState('networkidle');
   expect(requests.filter(url => new URL(url).pathname.includes('/payroll/periods/'))).toHaveLength(1);
   expect(requests.filter(url => new URL(url).pathname.endsWith('/payroll/pricing/terms'))).toHaveLength(1);
+  await page.getByRole('tab', { name:'Начисления' }).click();
   const controls = page.locator('#payrollAdjustmentForm').locator('input, select, button');
   expect(await controls.count()).toBeGreaterThan(3);
   for (const control of await controls.all()) {

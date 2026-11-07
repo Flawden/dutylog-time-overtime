@@ -41,8 +41,15 @@ test('Payroll Foundation calculates a versioned closed-month snapshot from the c
   await waitForPayrollReady(page);
   await expect(page.locator('#payrollPeriodStatus')).toContainText(/закрыт|closed/i);
   await expect(page.locator('#payrollIntegrityStatus')).toContainText(/согласован|healthy/i);
+  await expect(page.getByRole('tab', { name:'Обзор' })).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('#payrollTotal')).toBeVisible();
+  await expect(page.locator('#payroll-panel-settings')).toBeHidden();
+  await page.getByRole('tab', { name:'Начисления' }).click();
   await expect(page.locator('#payrollWorked')).toContainText('8 ч');
-  await expect(page.locator('#payrollSnapshotList')).toContainText(/Ревизия 1|Revision 1/);
   await expect(page.locator('#payrollAdjustmentList')).toContainText('Премия');
   await expect(page.locator('#payrollCalculate')).toBeEnabled();
+  await page.getByRole('tab', { name:'История' }).click();
+  await expect(page.locator('#payrollSnapshotList')).toContainText(/Ревизия 1|Revision 1/);
+  await page.getByRole('tab', { name:'Настройки' }).click();
+  await expect(page.locator('#payrollSettingsForm')).toBeVisible();
 });

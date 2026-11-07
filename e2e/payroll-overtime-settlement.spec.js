@@ -307,6 +307,8 @@ test('banked overtime becomes Payroll money only after explicit settlement with 
   await expect(page.locator('#payrollPeriodStatus'))
     .toContainText(/закрыт|closed/i);
 
+  await page.getByRole('tab', { name:'Начисления' }).click();
+
   await expect(page.locator('#payrollWorked'))
     .toContainText(/11\s*(ч|h)/i);
 
@@ -327,6 +329,8 @@ test('banked overtime becomes Payroll money only after explicit settlement with 
 
   await expect(page.locator('#payrollGrandTotal'))
     .toContainText(/13[^\d]*000/);
+
+  await page.getByRole('tab', { name:'История' }).click();
 
   await expect(page.locator('#payrollSnapshotList'))
     .toContainText(/Ревизия 1|Revision 1/);
