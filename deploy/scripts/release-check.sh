@@ -2687,7 +2687,13 @@ contains src/main/java/ru/daniil/shifts/web/ProfileController.java "workTimezone
 contains src/main/java/ru/daniil/shifts/service/WorkTimezoneChangeService.java "shiftTypeService.rebaseForTimezoneChange"
 contains src/main/java/ru/daniil/shifts/service/NotificationService.java "d.hasShiftOccurrenceSnapshot()"
 contains src/main/resources/static/js/60-settings.js "function syncTimeSettingsFromBuiltins"
-contains e2e/important-timezone.spec.js "Начало 06:30 Europe/Kyiv"
+# The Kyiv projection is date-sensitive (DST); guard the dynamic assertion,
+# not a hard-coded clock that is valid only during the summer offset.
+contains e2e/important-timezone.spec.js "function projectYekaterinburgShift(date)"
+contains e2e/important-timezone.spec.js "const datedProjection = projectYekaterinburgShift(shiftDate);"
+contains e2e/important-timezone.spec.js 'toContainText(`Начало ${datedProjection.start} Europe/Kyiv`)'
+contains e2e/important-timezone.spec.js "toContainText(datedProjection.reminder)"
+contains e2e/important-timezone.spec.js 'toContainText(`${datedProjection.start}–${datedProjection.end}`)'
 
   # v27.11.4 Task Deadline & Reminder Timezone Hotfix
 contains CHANGES.md "v27.11.4 — Task Deadline & Reminder Timezone Hotfix"
