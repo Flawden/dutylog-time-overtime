@@ -35,6 +35,8 @@ test('reviewed holiday explanation comes from each preview and frozen revision w
   await expect(history).toContainText(/Праздничная: компоненты: 0/);
   await expect(history).toContainText(/Ночная: 10/);
   await expect(page.locator('#payrollGrandTotal')).toContainText(/1\s*275/);
+  await expect(page.locator('#payrollTotalScope')).toContainText('НДФЛ, авансы и фактические выплаты автоматически не рассчитываются');
+  await expect(page.getByText('Итого к выплате')).toHaveCount(0);
 });
 
 test('stale source review explains blocked saving and does not display invented holiday money', async ({ page }) => {
