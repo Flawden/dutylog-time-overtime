@@ -652,10 +652,10 @@ test(
     await waitForPayrollReady(page);
 
     const monthInput =
-      page.locator('#payrollMonth');
+      page.locator('#payrollMonthTrigger');
 
     if (
-      (await monthInput.inputValue())
+      (await monthInput.getAttribute('data-value'))
       !== month
     ) {
       const refreshed =
@@ -666,8 +666,8 @@ test(
           200,
         );
 
-      await monthInput.fill(month);
-      await monthInput.dispatchEvent('change');
+      await monthInput.click();
+      await page.locator('#payrollMonth').fill(month);
 
       await refreshed;
       await waitForPayrollReady(page);
@@ -720,6 +720,7 @@ test(
     );
 
     await page.getByRole('tab', { name:'Настройки' }).click();
+    await page.locator('#payroll-settings-components').click();
     const preset =
       page.locator(
         '#compensationComponentPreset',

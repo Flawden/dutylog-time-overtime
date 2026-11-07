@@ -51,5 +51,14 @@ test('Payroll Foundation calculates a versioned closed-month snapshot from the c
   await page.getByRole('tab', { name:'История' }).click();
   await expect(page.locator('#payrollSnapshotList')).toContainText(/Ревизия 1|Revision 1/);
   await page.getByRole('tab', { name:'Настройки' }).click();
+  await expect(page.locator('#payrollSettingsForm')).toBeHidden();
+  await expect(page.locator('.payrollSettingsTile')).toHaveCount(4);
+  await page.locator('#payroll-settings-terms').click();
   await expect(page.locator('#payrollSettingsForm')).toBeVisible();
+  await page.locator('#payroll-settings-components').click();
+  await expect(page.locator('#compensationComponentPreset')).toBeVisible();
+  await expect(page.locator('#payrollSettingsForm')).toBeHidden();
+  await page.locator('#payrollMonthTrigger').click();
+  await expect(page.locator('#payrollMonth')).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Расчётный месяц' }).locator('button[data-month]')).toHaveCount(12);
 });

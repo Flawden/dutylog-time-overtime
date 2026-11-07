@@ -183,9 +183,9 @@ test('native HOLIDAY pricing adds configured premium from production calendar in
   await openView(page, 'payroll');
   await waitForPayrollReady(page);
 
-  const monthInput = page.locator('#payrollMonth');
+  const monthInput = page.locator('#payrollMonthTrigger');
 
-  if ((await monthInput.inputValue()) !== month) {
+  if ((await monthInput.getAttribute('data-value')) !== month) {
     const refreshed = waitForApi(
       page,
       'GET',
@@ -193,8 +193,8 @@ test('native HOLIDAY pricing adds configured premium from production calendar in
       200,
     );
 
-    await monthInput.fill(month);
-    await monthInput.dispatchEvent('change');
+    await monthInput.click();
+    await page.locator('#payrollMonth').fill(month);
 
     await refreshed;
     await waitForPayrollReady(page);

@@ -15,6 +15,7 @@ import HolidayReviewCard from "./HolidayReviewCard.vue";
 import RestDayElectionCard from "./RestDayElectionCard.vue";
 import PricingSettingsCard from "./PricingSettingsCard.vue";
 import CompensationComponentsCard from "./CompensationComponentsCard.vue";
+import PayrollMonthPicker from "./PayrollMonthPicker.vue";
 
 const shell = useShellStore(); const store = usePayrollStore();
 const { activeRoute, language, modulesLoaded, modules } = storeToRefs(shell); const { period, loading, error } = storeToRefs(store);
@@ -33,6 +34,18 @@ const currency = computed(() => preview.value?.currencyCode || effectiveCompensa
 const salaryMode = computed(() => preview.value?.payMode === "SALARY");
 type PayrollTab = "overview" | "earnings" | "settings" | "history";
 const activeTab = ref<PayrollTab>("overview");
+type SettingsSection = "terms" | "components" | "rules" | "norm";
+const settingsSection = ref<SettingsSection | null>(null);
+function toggleSettingsSection(section: SettingsSection): void {
+  settingsSection.value = settingsSection.value === section ? null : section;
+}
+const readableMonth = computed(() => {
+  const match = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(month.value);
+  if (!match) return month.value;
+  const monthName = new Intl.DateTimeFormat(language.value === "en" ? "en-US" : "ru-RU", { month: "long", timeZone: "UTC" })
+    .format(new Date(Date.UTC(2024, Number(match[2]) - 1, 1)));
+  return `${monthName.charAt(0).toUpperCase()}${monthName.slice(1)} ${match[1]}`;
+});
 const payrollTabs: { key: PayrollTab; ru: string; en: string }[] = [
   { key: "overview", ru: "Обзор", en: "Overview" },
   { key: "earnings", ru: "Начисления", en: "Earnings" },
@@ -132,7 +145,7 @@ onBeforeUnmount(()=>{if(previousDomain)window.DutyLogVueDomains=Object.freeze({.
 </script>
 
 <template><section v-if="activeRoute === 'payroll'" id="view-payroll" class="view payrollView" data-vue-domain-route="payroll" data-vue-domain-owner="payroll"><div class="payrollWorkspace payrollWorkspace--redesign">
-<header class="payrollHero card" aria-labelledby="payrollTitle"><div><div class="eyebrow">{{ text.foundation }}</div><h2 id="payrollTitle">{{ text.title }}</h2><p>{{ text.intro }}</p></div><div class="payrollHeroControls"><label>{{ text.month }}<input id="payrollMonth" v-model="month" type="month" @change="refresh"/></label><button id="payrollReload" type="button" :disabled="loading" @click="refresh">{{ text.reload }}</button></div></header>
+<header class="payrollHero card" aria-labelledby="payrollTitle"><div><div class="eyebrow">{{ text.foundation }}</div><h2 id="payrollTitle">{{ text.title }}</h2><p>{{ text.intro }}</p></div><div class="payrollHeroControls"><PayrollMonthPicker v-model="month" :language="language" :disabled="loading" @change="refresh" /><button id="payrollReload" type="button" :disabled="loading" @click="refresh">{{ text.reload }}</button></div></header>
 
 <nav class="payrollTabs" role="tablist" :aria-label="language === 'en' ? 'Payroll sections' : 'Разделы зарплаты'">
   <button v-for="tab in payrollTabs" :id="`payroll-tab-${tab.key}`" :key="tab.key" type="button" role="tab"
@@ -211,18 +224,59 @@ onBeforeUnmount(()=>{if(previousDomain)window.DutyLogVueDomains=Object.freeze({.
 
 </section>
 <section v-show="activeTab === 'settings'" id="payroll-panel-settings" role="tabpanel" aria-labelledby="payroll-tab-settings" class="payrollTabBody payrollSettingsBody">
+<div class="payrollSettingsTiles" :aria-label="language === 'en' ? 'Payroll settings sections' : 'Разделы настроек зарплаты'">
+  <button id="payroll-settings-terms" type="button" class="payrollSettingsTile" :class="{active: settingsSection === 'terms'}"
+    :aria-expanded="settingsSection === 'terms'" aria-controls="payroll-settings-panel-terms" @click="toggleSettingsSection('terms')">
+    <span class="payrollSettingsTileIcon payrollSettingsTileIcon--terms" aria-hidden="true">▣</span>
+    <span class="payrollSettingsTileText"><strong>{{ language === 'en' ? 'Pay terms' : 'Условия оплаты' }}</strong>
+      <small>{{ language === 'en' ? 'Salary, hourly rate, currency and dates' : 'Оклад, ставка, валюта и период действия' }}</small>
+      <em>{{ effectiveCompensation ? `${effectiveCompensation.payMode === 'SALARY' ? text.salary : text.hourly}: ${effectiveCompensation.payMode === 'SALARY' ? money(effectiveCompensation.monthlySalaryMinor, effectiveCompensation.currencyCode) : money(effectiveCompensation.hourlyRateMinor, effectiveCompensation.currencyCode)}` : (language === 'en' ? 'Not configured' : 'Не настроено') }}</em>
+    </span><span aria-hidden="true" class="payrollSettingsChevron">›</span>
+  </button>
+  <button id="payroll-settings-components" type="button" class="payrollSettingsTile" :class="{active: settingsSection === 'components'}"
+    :aria-expanded="settingsSection === 'components'" aria-controls="payroll-settings-panel-components" @click="toggleSettingsSection('components')">
+    <span class="payrollSettingsTileIcon payrollSettingsTileIcon--components" aria-hidden="true">▤</span>
+    <span class="payrollSettingsTileText"><strong>{{ text.compensationComponents }}</strong>
+      <small>{{ language === 'en' ? 'Bonuses, region coefficients and allowances' : 'Премии, коэффициенты и дополнительные выплаты' }}</small>
+      <em>{{ language === 'en' ? 'In current calculation' : 'В текущем расчёте' }}: {{ preview ? preview.compensationComponentLines.length : '—' }}</em>
+    </span><span aria-hidden="true" class="payrollSettingsChevron">›</span>
+  </button>
+  <button id="payroll-settings-rules" type="button" class="payrollSettingsTile" :class="{active: settingsSection === 'rules'}"
+    :aria-expanded="settingsSection === 'rules'" aria-controls="payroll-settings-panel-rules" @click="toggleSettingsSection('rules')">
+    <span class="payrollSettingsTileIcon payrollSettingsTileIcon--rules" aria-hidden="true">☷</span>
+    <span class="payrollSettingsTileText"><strong>{{ language === 'en' ? 'Pay rules' : 'Правила оплаты' }}</strong>
+      <small>{{ language === 'en' ? 'Nights, holidays and cash overtime' : 'Ночная работа, праздники и выплата переработки' }}</small>
+      <em>{{ language === 'en' ? 'Open configuration' : 'Открыть настройки' }}</em>
+    </span><span aria-hidden="true" class="payrollSettingsChevron">›</span>
+  </button>
+  <button id="payroll-settings-norm" type="button" class="payrollSettingsTile" :class="{active: settingsSection === 'norm'}"
+    :aria-expanded="settingsSection === 'norm'" aria-controls="payroll-settings-panel-norm" @click="toggleSettingsSection('norm')">
+    <span class="payrollSettingsTileIcon payrollSettingsTileIcon--norm" aria-hidden="true">▦</span>
+    <span class="payrollSettingsTileText"><strong>{{ language === 'en' ? 'Working-time norm' : 'Норма времени' }}</strong>
+      <small>{{ language === 'en' ? 'Production calendar and required hours' : 'Производственный календарь и расчётная норма' }}</small>
+      <em>{{ readableMonth }} · {{ productionCalendar ? minutes(productionCalendar.productionNormMinutes) : '—' }}</em>
+    </span><span aria-hidden="true" class="payrollSettingsChevron">›</span>
+  </button>
+</div>
+
+<div id="payroll-settings-panel-terms" v-show="settingsSection === 'terms'" class="payrollSettingsEditor" role="region" aria-labelledby="payroll-settings-terms">
 <section class="card payrollSettingsCard payrollCompensationCard"><div class="payrollSectionHead"><div><div class="eyebrow">Compensation</div><h3>{{ text.setup }}</h3></div></div><form id="payrollSettingsForm" class="payrollSettingsForm nativeCompensationForm" @submit.prevent="saveCompensation"><div class="compensationModeSwitch"><button type="button" :class="{active:payMode==='HOURLY'}" @click="payMode='HOURLY'">{{ text.hourly }}</button><button type="button" :class="{active:payMode==='SALARY'}" @click="payMode='SALARY'">{{ text.salary }}</button></div><label>{{ text.effective }}<input id="payrollCompensationMonth" v-model="effectiveMonth" type="month" required/></label><label>{{ text.currencyCode }}<input id="payrollCurrency" v-model="currencyCode" maxlength="3" pattern="[A-Za-z]{3}" required/></label><label>{{ payMode==='SALARY'?text.salary:text.hourly }}<input id="payrollHourlyRate" v-model="compensationAmount" type="number" min="0.01" max="10000000000" step="0.01" required/></label><button class="primary" type="submit" :disabled="loading">{{ text.save }}</button></form><p class="payrollHint">{{ payMode==='SALARY'?text.salaryHint:text.hourlyHint }}</p>
 <div v-if="compensationHistory.length" class="compensationHistory"><div class="eyebrow">{{ text.history }}</div><article v-for="item in compensationHistory" :key="item.id" class="compensationHistoryRow"><span><b>{{ compensationMonthLabel(item.effectiveMonth) }} · {{ item.payMode==='SALARY'?text.salary:text.hourly }}</b><small>{{ item.payMode==='SALARY'?money(item.monthlySalaryMinor,item.currencyCode):`${money(item.hourlyRateMinor,item.currencyCode)} / ч` }}</small></span><button v-if="item.effectiveMonth !== '1970-01'" type="button" :disabled="loading" @click="removeCompensation(item.effectiveMonth)">{{ text.remove }}</button></article></div></section>
+</div>
+<div id="payroll-settings-panel-components" v-show="settingsSection === 'components'" class="payrollSettingsEditor" role="region" aria-labelledby="payroll-settings-components">
 <CompensationComponentsCard
   :language="language"
   :month="month"
   :currency-code="currency"
 />
+</div>
 
+<div id="payroll-settings-panel-rules" v-show="settingsSection === 'rules'" class="payrollSettingsEditor" role="region" aria-labelledby="payroll-settings-rules">
 <PricingSettingsCard :language="language" />
+</div>
+<div id="payroll-settings-panel-norm" v-show="settingsSection === 'norm'" class="payrollSettingsEditor" role="region" aria-labelledby="payroll-settings-norm">
 <section class="card productionCalendarCard" data-production-calendar-foundation><div class="payrollSectionHead"><div><div class="eyebrow">Production Calendar</div><h3>{{ text.production }}</h3></div><button type="button" @click="openCalendar">{{ text.openCalendar }}</button></div><div class="productionNormMetrics"><div><span>{{ text.base }}</span><b id="productionBaseNorm">{{ minutes(productionCalendar?.baseNormMinutes) }}</b></div><div><span>{{ text.adjustment }}</span><b id="productionNormAdjustment">{{ minutes(productionCalendar?.adjustmentMinutes) }}</b></div><div class="accent"><span>{{ text.production }}</span><b id="productionNorm">{{ minutes(productionCalendar?.productionNormMinutes) }}</b></div></div><p v-if="productionCalendar&&!productionCalendar.scheduleCoverageComplete" id="productionCoverageWarning" class="productionCoverageWarning">{{ text.coverageWarn }}</p><div class="productionCalendarRules" data-production-calendar-summary-only><article v-for="day in productionAffectedDays" :key="day.date" class="productionCalendarRule productionCalendarRule--summary"><span><b>{{ day.date }}</b><small>{{ day.label || day.dayKind }}</small></span><strong>{{ minutes(day.baseNormMinutes) }} → {{ minutes(day.productionNormMinutes) }}</strong></article><div v-if="!productionAffectedDays.length" class="payrollEmpty">{{ text.noRules }}</div></div></section>
-
-
+</div>
 </section>
 <section v-show="activeTab === 'history'" id="payroll-panel-history" role="tabpanel" aria-labelledby="payroll-tab-history" class="payrollTabBody">
 <section class="card payrollSnapshotCard"><div class="payrollSectionHead"><div><div class="eyebrow">{{ text.snapshots }}</div><h3>{{ text.revisions }}</h3></div></div><div class="payrollBlocking" id="payrollBlocking" :class="blocking?'blocked':'ready'">{{ blocking || text.ready }}</div><button class="primary payrollCalculate" id="payrollCalculate" type="button" :disabled="!period?.canCalculate||loading" @click="calculate">{{ text.calculate }}</button><div class="payrollSnapshotList" id="payrollSnapshotList"><article v-for="item in period?.snapshots??[]" :key="item.id" class="payrollSnapshotItem" :class="item.supersededById?'superseded':'current'"><span><b>{{ text.revision }} {{ item.revision }}</b><small>{{ item.payMode }} · {{ compensationMonthLabel(item.compensationEffectiveMonth) }} · {{ new Date(item.createdAt).toLocaleString(language==='en'?'en-US':'ru-RU') }}</small><small v-if="item.settlementCount">{{ text.settlement }} · {{ minutes(item.settlementMinutes) }} · {{ money(item.settlementPayMinor,item.currencyCode) }}</small><small v-if="item.ordinaryPremiumPricingFingerprint">{{ text.ordinaryPremium }} · {{ minutes(item.ordinaryPremiumMinutes) }} · {{ money(item.ordinaryPremiumPayMinor,item.currencyCode) }}</small><small v-if="item.compensationComponentCount">{{ text.compensationComponents }} · {{ item.compensationComponentCount }} {{ text.componentCount }} · {{ money(item.compensationComponentEarningsMinor,item.currencyCode) }}</small><small v-for="line in item.compensationComponentLines" :key="`snapshot-component-${item.id}-${line.versionId}`"><b>{{ line.displayName }}</b> · {{ componentLineDetail(line,item.currencyCode) }} → {{ money(line.amountMinor,item.currencyCode) }}</small><Article153PaymentDetails v-if="item.article153?.status==='REVIEWED'||item.ordinaryPremiumPricingFingerprint" :summary="item.article153" :currency="item.currencyCode" :language="language" /><details v-if="item.settlementPricingFingerprint||item.compensationComponentFingerprint" class="payrollSnapshotTechnical"><summary>{{ text.technicalDetails }}</summary><template v-if="item.settlementPricingFingerprint"><small>{{ text.fingerprint }}</small><code class="payrollFingerprint">{{ item.settlementPricingFingerprint }}</code></template><template v-if="item.compensationComponentFingerprint"><small>{{ text.componentFingerprint }}</small><code class="payrollFingerprint">{{ item.compensationComponentFingerprint }}</code></template></details></span><strong>{{ money(item.totalPayMinor,item.currencyCode) }}</strong></article><div v-if="!(period?.snapshots.length)" class="payrollEmpty">{{ text.noSnapshots }}</div></div></section>
@@ -232,6 +286,26 @@ onBeforeUnmount(()=>{if(previousDomain)window.DutyLogVueDomains=Object.freeze({.
 </div></section></template>
 
 <style scoped>
+
+/* UX-P0.1: focused, two-column settings instead of a continuous form. */
+.payrollSettingsTiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.payrollSettingsTile { display: flex; gap: 14px; align-items: flex-start; min-width: 0; min-height: 118px; text-align: left; padding: 18px; border: 1px solid var(--payroll-ux-line); border-radius: 16px; background: var(--panel); color: var(--text); }
+.payrollSettingsTile:hover, .payrollSettingsTile.active { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 7%, var(--panel)); }
+.payrollSettingsTile:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.payrollSettingsTileIcon { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 11px; background: color-mix(in srgb, var(--accent) 15%, var(--panel2)); color: var(--accent); font-size: 1.3rem; }
+.payrollSettingsTileIcon--terms { color: #8ba7ef; background: #355a9d33; }
+.payrollSettingsTileIcon--norm { color: #e6b36f; background: #b87a2130; }
+.payrollSettingsTileText { flex: 1; display: grid; gap: 7px; min-width: 0; }
+.payrollSettingsTileText strong { font-size: 1.03rem; }
+.payrollSettingsTileText small { color: var(--mut); font-size: .78rem; line-height: 1.4; }
+.payrollSettingsTileText em { width: fit-content; color: var(--accent); font-size: .75rem; font-style: normal; font-weight: 700; }
+.payrollSettingsChevron { flex: none; color: var(--accent); font-size: 1.6rem; line-height: 1; }
+.payrollSettingsEditor { display: grid; min-width: 0; }
+.payrollSettingsEditor > .card { min-width: 0; }
+@media (max-width: 640px) {
+  .payrollSettingsTiles { grid-template-columns: minmax(0, 1fr); }
+  .payrollSettingsTile { min-height: 100px; padding: 14px; }
+}
 
 /* UX-P0: one-glance Payroll overview, advanced controls in focused sections. */
 .payrollWorkspace--redesign { --payroll-ux-line: var(--line, #303b46); gap: 18px; }

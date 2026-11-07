@@ -24,8 +24,8 @@ async function setup(page, blocked = false) {
   });
   await openView(page, 'payroll');
   await waitForPayrollReady(page);
+  await page.locator('#payrollMonthTrigger').click();
   await page.locator('#payrollMonth').fill('2026-05');
-  await page.locator('#payrollMonth').dispatchEvent('change');
   const card = page.getByTestId('article153-rest-election');
   await card.getByRole('button', { name: 'Показать подходящую работу' }).click();
   return { card, received: () => received };
