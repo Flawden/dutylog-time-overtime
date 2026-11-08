@@ -5635,15 +5635,15 @@ else
   fail "offline account isolation regression tests failed"
 fi
 
-if [[ "$TEST_METHODS" == "2826" ]]; then
-  ok "test method baseline: 2826"
+if [[ "$TEST_METHODS" == "2854" ]]; then
+  ok "test method baseline: 2854"
 else
-  fail "expected 2826 @Test methods, found $TEST_METHODS"
+  fail "expected 2854 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "397" ]]; then
-  ok "test class baseline: 397"
+if [[ "$TEST_CLASSES" == "400" ]]; then
+  ok "test class baseline: 400"
 else
-  fail "expected 397 test classes, found $TEST_CLASSES"
+  fail "expected 400 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
