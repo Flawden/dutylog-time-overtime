@@ -1,5 +1,7 @@
 package ru.daniil.shifts.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
@@ -2860,6 +2862,196 @@ public final class Dtos {
             String currencyCode,
             Long vacationPayMinor,
             int payableCalendarDays
+    ) {}
+
+    /**
+     * Minimal actual vacation-pay receipt. Calculation is optional: recording
+     * real money must not depend on whether the current calendar can calculate it.
+     */
+    public record VacationPayReceiptCreateRequest(
+            @NotNull(message = "Отпуск обязателен")
+            @Min(value = 1, message = "absencePeriodId должен быть положительным")
+            Long absencePeriodId,
+
+            @NotBlank(message = "Дата фактического получения обязательна")
+            @Pattern(
+                    regexp = "\\d{4}-\\d{2}-\\d{2}",
+                    message = "Дата фактического получения должна быть в формате yyyy-MM-dd"
+            )
+            String receivedDate,
+
+            @NotNull(message = "Фактически полученная сумма обязательна")
+            @Min(value = 1, message = "Фактически полученная сумма должна быть положительной")
+            Long actualReceivedAmountMinor,
+
+            @NotBlank(message = "Валюта фактического поступления обязательна")
+            @Pattern(regexp = "[A-Z]{3}", message = "Код валюты должен состоять из трёх заглавных букв")
+            String currencyCode,
+
+            @Valid
+            VacationPayReceiptCalculationRequest calculation
+    ) {}
+
+    /** Optional calculation inputs; the server derives the event date from the owned absence. */
+    public record VacationPayReceiptCalculationRequest(
+            @NotBlank(message = "Месяц границы discovery обязателен")
+            @Pattern(
+                    regexp = "\\d{4}-(0[1-9]|1[0-2])",
+                    message = "discoveryThroughMonth должен быть в формате yyyy-MM"
+            )
+            String discoveryThroughMonth,
+
+            @NotNull(message = "Список доказанных месяцев без Payroll обязателен")
+            List<
+                    @NotBlank(message = "Месяц доказательства не должен быть пустым")
+                    @Pattern(
+                            regexp = "\\d{4}-(0[1-9]|1[0-2])",
+                            message = "Месяц доказательства должен быть в формате yyyy-MM"
+                    )
+                    String
+            > provenNoPayrollMonths
+    ) {}
+
+    /** Per-date Article-120 holiday evidence frozen with a successful calculation. */
+    public record VacationPayHolidayFactDto(
+            String date,
+            boolean nonWorkingHoliday,
+            String authorityCode,
+            String dayKind
+    ) {}
+
+    /**
+     * Stable, versioned calculation evidence frozen when the optional calculation is ready.
+     * Big integer values are strings so browser clients cannot lose precision.
+     */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @JsonPropertyOrder({
+            "schemaVersion",
+            "applicationRuleId",
+            "payableDaysRuleId",
+            "holidayPolicyRuleId",
+            "moneyFormulaRuleId",
+            "roundingPolicy",
+            "eventDate",
+            "eventMonth",
+            "absencePeriodId",
+            "vacationFrom",
+            "vacationTo",
+            "absenceStatus",
+            "discoveryThroughMonth",
+            "provenNoPayrollMonths",
+            "selectedBasis",
+            "currencyCode",
+            "averageDailyNumeratorMinor",
+            "averageDailyDenominatorDays",
+            "payableCalendarDays",
+            "exactPayNumeratorMinor",
+            "exactPayDenominator",
+            "calculatedGrossAmountMinor",
+            "referencePeriodFrom",
+            "referencePeriodTo",
+            "paragraph7CountableCalendarDays",
+            "paragraph7AuthorityCode",
+            "paragraph8EstablishedBasis",
+            "paragraph8Policy",
+            "paragraph8AuthorityCode",
+            "paragraph8AnnualNormMinutes",
+            "physicalSpanDates",
+            "payableDates",
+            "excludedHolidayDates",
+            "holidayFacts"
+    })
+    public record VacationPayCalculationEvidenceDto(
+            String schemaVersion,
+            String applicationRuleId,
+            String payableDaysRuleId,
+            String holidayPolicyRuleId,
+            String moneyFormulaRuleId,
+            String roundingPolicy,
+            String eventDate,
+            String eventMonth,
+            Long absencePeriodId,
+            String vacationFrom,
+            String vacationTo,
+            String absenceStatus,
+            String discoveryThroughMonth,
+            List<String> provenNoPayrollMonths,
+            String selectedBasis,
+            String currencyCode,
+            String averageDailyNumeratorMinor,
+            String averageDailyDenominatorDays,
+            int payableCalendarDays,
+            String exactPayNumeratorMinor,
+            String exactPayDenominator,
+            long calculatedGrossAmountMinor,
+            String referencePeriodFrom,
+            String referencePeriodTo,
+            Integer paragraph7CountableCalendarDays,
+            String paragraph7AuthorityCode,
+            String paragraph8EstablishedBasis,
+            String paragraph8Policy,
+            String paragraph8AuthorityCode,
+            Long paragraph8AnnualNormMinutes,
+            List<String> physicalSpanDates,
+            List<String> payableDates,
+            List<String> excludedHolidayDates,
+            List<VacationPayHolidayFactDto> holidayFacts
+    ) {}
+
+    /** Immutable result of an optional calculation attempt attached to a receipt. */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @JsonPropertyOrder({
+            "schemaVersion",
+            "status",
+            "eventDate",
+            "discoveryThroughMonth",
+            "provenNoPayrollMonths",
+            "blockingStage",
+            "blockingReason",
+            "upstreamBlockingReason",
+            "evidence"
+    })
+    public record VacationPayCalculationSnapshotDto(
+            String schemaVersion,
+            String status,
+            String eventDate,
+            String discoveryThroughMonth,
+            List<String> provenNoPayrollMonths,
+            String blockingStage,
+            String blockingReason,
+            String upstreamBlockingReason,
+            VacationPayCalculationEvidenceDto evidence
+    ) {}
+
+    /**
+     * Actual receipt amount is net cash credited after withholding; calculatedGrossAmountMinor
+     * is gross before withholding. The currency-code match flag only compares units; it does not
+     * make gross and net amounts directly comparable without a withholding calculation.
+     */
+    public record VacationPayReceiptDto(
+            Long id,
+            Long absencePeriodId,
+            String eventDate,
+            String vacationFrom,
+            String vacationTo,
+            String receivedDate,
+            long actualReceivedAmountMinor,
+            String currencyCode,
+            String calculationCurrencyCode,
+            Boolean calculationAndReceiptCurrencyCodesMatch,
+            String absenceStatus,
+            String absenceTypeSystemCode,
+            String absenceTypeBalancePolicy,
+            String absenceCoverage,
+            String absenceCompensationPolicy,
+            String calculationStatus,
+            Long calculatedGrossAmountMinor,
+            Integer payableCalendarDays,
+            String calculationBlockingReason,
+            String calculationSchemaVersion,
+            String receiptFingerprint,
+            String createdAt,
+            VacationPayCalculationSnapshotDto calculationSnapshot
     ) {}
 
     /** Per-user money settings. All values are stored in minor currency units. */

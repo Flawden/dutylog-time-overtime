@@ -9,8 +9,11 @@ import ru.daniil.shifts.model.AppUser;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface AbsencePeriodRepository extends JpaRepository<AbsencePeriod, Long> {
+    Optional<AbsencePeriod> findByIdAndOwner(Long id, AppUser owner);
+
     List<AbsencePeriod> findByOwnerOrderByStartDateAscIdAsc(AppUser owner);
 
     List<AbsencePeriod> findByOwnerAndEndDateGreaterThanEqualAndStartDateLessThanEqualOrderByStartDateAscIdAsc(
