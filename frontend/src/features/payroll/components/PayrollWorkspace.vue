@@ -16,6 +16,7 @@ import RestDayElectionCard from "./RestDayElectionCard.vue";
 import PricingSettingsCard from "./PricingSettingsCard.vue";
 import CompensationComponentsCard from "./CompensationComponentsCard.vue";
 import PayrollMonthPicker from "./PayrollMonthPicker.vue";
+import VacationPayReceiptsCard from "../vacation-pay/VacationPayReceiptsCard.vue";
 
 const shell = useShellStore(); const store = usePayrollStore();
 const { activeRoute, language, modulesLoaded, modules } = storeToRefs(shell); const { period, loading, error } = storeToRefs(store);
@@ -32,7 +33,7 @@ const effectiveCompensation = computed(() => period.value?.effectiveCompensation
 const compensationHistory = computed(() => period.value?.compensationHistory ?? []);
 const currency = computed(() => preview.value?.currencyCode || effectiveCompensation.value?.currencyCode || period.value?.settings.currencyCode || "RUB");
 const salaryMode = computed(() => preview.value?.payMode === "SALARY");
-type PayrollTab = "overview" | "earnings" | "settings" | "history";
+type PayrollTab = "overview" | "earnings" | "settings" | "history" | "vacation-pay";
 const activeTab = ref<PayrollTab>("overview");
 type SettingsSection = "terms" | "components" | "rules" | "norm";
 const settingsSection = ref<SettingsSection | null>(null);
@@ -74,6 +75,7 @@ const payrollTabs: { key: PayrollTab; ru: string; en: string }[] = [
   { key: "earnings", ru: "Начисления", en: "Earnings" },
   { key: "settings", ru: "Настройки", en: "Settings" },
   { key: "history", ru: "История", en: "History" },
+  { key: "vacation-pay", ru: "Отпускные", en: "Vacation pay" },
 ];
 function tabLabel(key: PayrollTab): string {
   const tab = payrollTabs.find(item => item.key === key);
@@ -314,6 +316,9 @@ onBeforeUnmount(()=>{if(previousDomain)window.DutyLogVueDomains=Object.freeze({.
 </div>
 </div>
 </section>
+<section v-if="activeTab === 'vacation-pay'" id="payroll-panel-vacation-pay" role="tabpanel" aria-labelledby="payroll-tab-vacation-pay" class="payrollTabBody">
+  <VacationPayReceiptsCard :language="language" />
+</section>
 <section v-show="activeTab === 'history'" id="payroll-panel-history" role="tabpanel" aria-labelledby="payroll-tab-history" class="payrollTabBody">
 <section class="card payrollSnapshotCard"><div class="payrollSectionHead"><div><div class="eyebrow">{{ text.snapshots }}</div><h3>{{ text.revisions }}</h3></div></div><div class="payrollBlocking" id="payrollBlocking" :class="blocking?'blocked':'ready'">{{ blocking || text.ready }}</div><button class="primary payrollCalculate" id="payrollCalculate" type="button" :disabled="!period?.canCalculate||loading" @click="calculate">{{ text.calculate }}</button><div class="payrollSnapshotList" id="payrollSnapshotList"><article v-for="item in period?.snapshots??[]" :key="item.id" class="payrollSnapshotItem" :class="item.supersededById?'superseded':'current'"><span><b>{{ text.revision }} {{ item.revision }}</b><small>{{ item.payMode }} · {{ compensationMonthLabel(item.compensationEffectiveMonth) }} · {{ new Date(item.createdAt).toLocaleString(language==='en'?'en-US':'ru-RU') }}</small><small v-if="item.settlementCount">{{ text.settlement }} · {{ minutes(item.settlementMinutes) }} · {{ money(item.settlementPayMinor,item.currencyCode) }}</small><small v-if="item.ordinaryPremiumPricingFingerprint">{{ text.ordinaryPremium }} · {{ minutes(item.ordinaryPremiumMinutes) }} · {{ money(item.ordinaryPremiumPayMinor,item.currencyCode) }}</small><small v-if="item.compensationComponentCount">{{ text.compensationComponents }} · {{ item.compensationComponentCount }} {{ text.componentCount }} · {{ money(item.compensationComponentEarningsMinor,item.currencyCode) }}</small><small v-for="line in item.compensationComponentLines" :key="`snapshot-component-${item.id}-${line.versionId}`"><b>{{ line.displayName }}</b> · {{ componentLineDetail(line,item.currencyCode) }} → {{ money(line.amountMinor,item.currencyCode) }}</small><Article153PaymentDetails v-if="item.article153?.status==='REVIEWED'||item.ordinaryPremiumPricingFingerprint" :summary="item.article153" :currency="item.currencyCode" :language="language" /><details v-if="item.settlementPricingFingerprint||item.compensationComponentFingerprint" class="payrollSnapshotTechnical"><summary>{{ text.technicalDetails }}</summary><template v-if="item.settlementPricingFingerprint"><small>{{ text.fingerprint }}</small><code class="payrollFingerprint">{{ item.settlementPricingFingerprint }}</code></template><template v-if="item.compensationComponentFingerprint"><small>{{ text.componentFingerprint }}</small><code class="payrollFingerprint">{{ item.compensationComponentFingerprint }}</code></template></details></span><strong>{{ money(item.totalPayMinor,item.currencyCode) }}</strong></article><div v-if="!(period?.snapshots.length)" class="payrollEmpty">{{ text.noSnapshots }}</div></div></section>
 
@@ -361,7 +366,7 @@ onBeforeUnmount(()=>{if(previousDomain)window.DutyLogVueDomains=Object.freeze({.
 /* UX-P0: one-glance Payroll overview, advanced controls in focused sections. */
 .payrollWorkspace--redesign { --payroll-ux-line: var(--line, #303b46); gap: 18px; }
 .payrollWorkspace--redesign > .payrollHero { padding: 18px 24px; }
-.payrollTabs { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 6px; padding: 5px; border: 1px solid var(--payroll-ux-line); border-radius: 15px; background: var(--panel); }
+.payrollTabs { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 6px; padding: 5px; border: 1px solid var(--payroll-ux-line); border-radius: 15px; background: var(--panel); }
 .payrollTabs button { min-height: 46px; border-radius: 11px; border: 1px solid transparent; background: transparent; color: var(--mut); font-weight: 750; }
 .payrollTabs button.active { border-color: color-mix(in srgb, var(--accent) 60%, var(--payroll-ux-line)); background: color-mix(in srgb, var(--accent) 16%, var(--panel)); color: var(--text); }
 .payrollTabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
